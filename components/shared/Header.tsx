@@ -14,7 +14,7 @@ const Header = () => {
 					className="w-36"
 				>
 					<Image
-						src="/assets/images/logo.svg"
+						src="/assets/images/logo.png"
 						width={128}
 						height={38}
 						alt="Eventts logo"
