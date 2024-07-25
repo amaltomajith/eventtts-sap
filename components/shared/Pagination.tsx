@@ -1,56 +1,56 @@
-"use client"
+"use client";
 
-import { useRouter, useSearchParams } from 'next/navigation'
-import React from 'react'
-import { Button } from '../ui/button'
-import { formUrlQuery } from '@/lib/utils'
+import React from "react";
+import { Button } from "../ui/button";
+import { formUrlQuery } from "@/lib/utils";
+import { useRouter, useSearchParams } from "next/navigation";
 
-type PaginationProps = {
-  page: number | string,
-  totalPages: number,
-  urlParamName?: string
+interface Props {
+  page: number;
+  totalPages: number;
 }
 
-const Pagination = ({ page, totalPages, urlParamName }: PaginationProps) => {
-  const router = useRouter()
-  const searchParams = useSearchParams()
+const Pagination = (props: Props) => {
+  const searchParams = useSearchParams();
+  const router = useRouter();
 
-  const onClick = (btnType: string) => {
-    const pageValue = btnType === 'next' 
-      ? Number(page) + 1 
-      : Number(page) - 1
+  const handlePagination = (value: string) => {
+    const nextPageNumber = value === "prev" ? props.page - 1 : props.page + 1;
 
     const newUrl = formUrlQuery({
       params: searchParams.toString(),
-      key: urlParamName || 'page',
-      value: pageValue.toString(),
-    })
+      key: "page",
+      value: nextPageNumber.toString(),
+    });
 
-    router.push(newUrl, {scroll: false})
+    router.push(newUrl, { scroll: false });
+  };
+
+  if (props.totalPages <= 1 && props.page === 1) {
+    return null;
   }
 
   return (
-    <div className="flex gap-2">
+    <div className="flex justify-center items-center mt-10 gap-5">
       <Button
-        size="lg"
-        variant="outline"
-        className="w-28"
-        onClick={() => onClick('prev')}
-        disabled={Number(page) <= 1}
+        disabled={props.page === 1}
+        size={"sm"}
+        onClick={() => handlePagination("prev")}
       >
-        Previous
+        Prev
+      </Button>
+      <Button size={"sm"} variant={"secondary"}>
+        {props.page}
       </Button>
       <Button
-        size="lg"
-        variant="outline"
-        className="w-28"
-        onClick={() => onClick('next')}
-        disabled={Number(page) >= totalPages}
+        disabled={props.page >= props.totalPages}
+        size={"sm"}
+        onClick={() => handlePagination("next")}
       >
         Next
       </Button>
     </div>
-  )
-}
+  );
+};
 
-export default Pagination
+export default Pagination;

@@ -1,41 +1,52 @@
+"use client";
+
+import React from "react";
 import {
-	Sheet,
-	SheetContent,
-	SheetDescription,
-	SheetHeader,
-	SheetTitle,
-	SheetTrigger,
+  Sheet,
+  SheetClose,
+  SheetContent,
+  SheetTrigger,
 } from "@/components/ui/sheet";
-import Image from "next/image";
-import { Separator } from "../ui/separator";
-import NavItems from "./NavItems";
+import { GiHamburgerMenu } from "react-icons/gi";
+import { sidebarLinks } from "@/constants/sidebarLinks";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
 
 const MobileNav = () => {
-	return (
-		<nav className="md:hidden">
-			<Sheet>
-				<SheetTrigger className="align-middle">
-					<Image
-						src="/assets/icons/menu.svg"
-						alt="menu"
-						width={24}
-						height={24}
-						className="cursor-pointer"
-					/>
-				</SheetTrigger>
-				<SheetContent className="flex flex-col gap-6 bg-white md:hidden">
-					<Image
-						src="/assets/images/logo.png"
-						alt="logo"
-						width={128}
-						height={38}
-					/>
-					<Separator className="border border-gray-50" />
-					<NavItems />
-				</SheetContent>
-			</Sheet>
-		</nav>
-	);
+  const pathName = usePathname();
+
+  return (
+    <div className="hidden max-md:block text-center">
+      <Sheet>
+        <SheetTrigger className="flex justify-center items-center ml-2">
+          <GiHamburgerMenu />
+        </SheetTrigger>
+        <SheetContent side={"left"} className="flex flex-col gap-5 pt-10">
+          {sidebarLinks.map((link) => {
+            let active = false;
+
+            if (link.path === pathName) {
+              active = true;
+            }
+
+            return (
+              <SheetClose asChild key={link.label}>
+                <Link
+                  href={link.path}
+                  className={`flex justify-start items-center gap-4 font-medium text-lg ${
+                    active ? "text-primary font-bold" : ""
+                  }`}
+                >
+                  {link.image}
+                  {link.label}
+                </Link>
+              </SheetClose>
+            );
+          })}
+        </SheetContent>
+      </Sheet>
+    </div>
+  );
 };
 
 export default MobileNav;

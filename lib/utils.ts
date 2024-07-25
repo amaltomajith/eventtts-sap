@@ -1,93 +1,78 @@
-import { type ClassValue, clsx } from 'clsx'
-
-import { twMerge } from 'tailwind-merge'
-import qs from 'query-string'
-
-import { UrlQueryParams, RemoveUrlQueryParams } from '@/types'
+import { type ClassValue, clsx } from "clsx"
+import { twMerge } from "tailwind-merge"
+import qs from 'query-string';
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
 }
 
-export const formatDateTime = (dateString: Date) => {
-  const dateTimeOptions: Intl.DateTimeFormatOptions = {
-    weekday: 'short', // abbreviated weekday name (e.g., 'Mon')
-    month: 'short', // abbreviated month name (e.g., 'Oct')
-    day: 'numeric', // numeric day of the month (e.g., '25')
-    hour: 'numeric', // numeric hour (e.g., '8')
-    minute: 'numeric', // numeric minute (e.g., '30')
-    hour12: true, // use 12-hour clock (true) or 24-hour clock (false)
-  }
-
-  const dateOptions: Intl.DateTimeFormatOptions = {
-    weekday: 'short', // abbreviated weekday name (e.g., 'Mon')
-    month: 'short', // abbreviated month name (e.g., 'Oct')
-    year: 'numeric', // numeric year (e.g., '2023')
-    day: 'numeric', // numeric day of the month (e.g., '25')
-  }
-
-  const timeOptions: Intl.DateTimeFormatOptions = {
-    hour: 'numeric', // numeric hour (e.g., '8')
-    minute: 'numeric', // numeric minute (e.g., '30')
-    hour12: true, // use 12-hour clock (true) or 24-hour clock (false)
-  }
-
-  const formattedDateTime: string = new Date(dateString).toLocaleString('en-US', dateTimeOptions)
-
-  const formattedDate: string = new Date(dateString).toLocaleString('en-US', dateOptions)
-
-  const formattedTime: string = new Date(dateString).toLocaleString('en-US', timeOptions)
-
-  return {
-    dateTime: formattedDateTime,
-    dateOnly: formattedDate,
-    timeOnly: formattedTime,
-  }
+interface FormUrlQueryParams {
+  params: string;
+  key: string;
+  value: string
 }
 
-export const convertFileToUrl = (file: File) => URL.createObjectURL(file)
+export const formUrlQuery = ({ params, key, value }: FormUrlQueryParams) => {
 
-export const formatPrice = (price: string) => {
-  const amount = parseFloat(price)
-  const formattedPrice = new Intl.NumberFormat('en-US', {
-    style: 'currency',
-    currency: 'USD',
-  }).format(amount)
+  const currentUrl = qs.parse(params);
 
-  return formattedPrice
+  currentUrl[key] = value;
+
+  return qs.stringifyUrl({
+    url: window.location.pathname,
+    query: currentUrl
+  },
+    { skipNull: true })
+
 }
 
-export function formUrlQuery({ params, key, value }: UrlQueryParams) {
-  const currentUrl = qs.parse(params)
-
-  currentUrl[key] = value
-
-  return qs.stringifyUrl(
-    {
-      url: window.location.pathname,
-      query: currentUrl,
-    },
-    { skipNull: true }
-  )
+interface RemoveUrlQueryParams {
+  params: string;
+  keysToRemove: string[];
 }
 
-export function removeKeysFromQuery({ params, keysToRemove }: RemoveUrlQueryParams) {
-  const currentUrl = qs.parse(params)
+export const removeKeysFromQuery = ({ params, keysToRemove }: RemoveUrlQueryParams) => {
+  const currentUrl = qs.parse(params);
 
-  keysToRemove.forEach(key => {
-    delete currentUrl[key]
+  keysToRemove.forEach((key) => {
+    delete currentUrl[key];
   })
 
-  return qs.stringifyUrl(
-    {
-      url: window.location.pathname,
-      query: currentUrl,
-    },
-    { skipNull: true }
-  )
+  return qs.stringifyUrl({
+    url: window.location.pathname,
+    query: currentUrl,
+  },
+    { skipNull: true })
 }
 
-export const handleError = (error: unknown) => {
-  console.error(error)
-  throw new Error(typeof error === 'string' ? error : JSON.stringify(error))
+export const dateConverter = (inputDateString: string) => {
+  const inputDate: Date = new Date(inputDateString);
+
+  const options: Intl.DateTimeFormatOptions = {
+    weekday: "short",
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+  };
+
+  const dateFormatter: Intl.DateTimeFormat = new Intl.DateTimeFormat(
+    "en-US",
+    options
+  );
+  const formattedDate: string = dateFormatter.format(inputDate);
+
+  return formattedDate;
+};
+
+export const timeFormatConverter = (timeString: string) => {
+  const [hours, minutes] = timeString.split(':');
+  let formattedHours = parseInt(hours, 10);
+  const ampm = formattedHours >= 12 ? 'PM' : 'AM';
+
+  formattedHours = formattedHours % 12 || 12;
+  const formattedTime = `${formattedHours}:${minutes} ${ampm}`;
+
+  return formattedTime;
 }
+
+export const convertFileToUrl = (file: File) => URL.createObjectURL(file);

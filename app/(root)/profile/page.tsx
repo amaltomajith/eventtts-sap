@@ -1,78 +1,46 @@
-import Collection from '@/components/shared/Collection'
-import { Button } from '@/components/ui/button'
-import { getEventsByUser } from '@/lib/actions/event.actions'
-import { getOrdersByUser } from '@/lib/actions/order.actions'
-import { IOrder } from '@/lib/database/models/order.model'
-import { SearchParamProps } from '@/types'
-import { auth } from '@clerk/nextjs'
-import Link from 'next/link'
-import React from 'react'
+import EventCards from "@/components/shared/EventCards";
+import NoResults from "@/components/shared/NoResults";
+import { Button } from "@/components/ui/button";
+import { getEventsByUserId } from "@/lib/actions/event.action";
+import { getUserByClerkId } from "@/lib/actions/user.action";
+import { auth } from "@clerk/nextjs";
+import Link from "next/link";
+import { redirect } from "next/navigation";
+import React from "react";
 
-const ProfilePage = async ({ searchParams }: SearchParamProps) => {
-  const { sessionClaims } = auth();
-  const userId = sessionClaims?.userId as string;
+const Page = async () => {
+  const { userId } = auth();
 
-  const ordersPage = Number(searchParams?.ordersPage) || 1;
-  const eventsPage = Number(searchParams?.eventsPage) || 1;
+  if (!userId) {
+    redirect("/sign-in");
+  }
 
-  const orders = await getOrdersByUser({ userId, page: ordersPage})
+  const user = await getUserByClerkId(userId);
 
-  const orderedEvents = orders?.data.map((order: IOrder) => order.event) || [];
-  const organizedEvents = await getEventsByUser({ userId, page: eventsPage })
+  const events = await getEventsByUserId(user._id);
 
   return (
-    <>
-      {/* My Tickets */}
-      <section className="bg-primary-50 bg-dotted-pattern bg-cover bg-center py-5 md:py-10">
-        <div className="wrapper flex items-center justify-center sm:justify-between">
-          <h3 className='h3-bold text-center sm:text-left'>My Tickets</h3>
-          <Button asChild size="lg" className="button hidden sm:flex">
-            <Link href="/#events">
-              Explore More Events
-            </Link>
-          </Button>
-        </div>
-      </section>
-
-      <section className="wrapper my-8">
-        <Collection 
-          data={orderedEvents}
-          emptyTitle="No event tickets purchased yet"
-          emptyStateSubtext="No worries - plenty of exciting events to explore!"
-          collectionType="My_Tickets"
-          limit={3}
-          page={ordersPage}
-          urlParamName="ordersPage"
-          totalPages={orders?.totalPages}
+    <div className="flex flex-col gap-5">
+      <div className="flex max-sm:flex-col justify-between max-sm:items-center">
+        <h1 className="text-4xl max-sm:text-2xl font-bold  bg-gradient-to-r from-violet-600 to-primary bg-clip-text text-transparent mb-5">
+          Events Organized by You
+        </h1>
+        <Link href="/create-event">
+          <Button className="w-fit">Create Event</Button>
+        </Link>
+      </div>
+      {events.length > 0 ? (
+        <EventCards events={events} page="profile" />
+      ) : (
+        <NoResults
+          title={"You have not created any events yet."}
+          desc={"create your first event now!"}
+          // link={"/#categories"}
+          // linkTitle={"Explore Events"}
         />
-      </section>
+      )}
+    </div>
+  );
+};
 
-      {/* Events Organized */}
-      <section className="bg-primary-50 bg-dotted-pattern bg-cover bg-center py-5 md:py-10">
-        <div className="wrapper flex items-center justify-center sm:justify-between">
-          <h3 className='h3-bold text-center sm:text-left'>Events Organized</h3>
-          <Button asChild size="lg" className="button hidden sm:flex">
-            <Link href="/events/create">
-              Create New Event
-            </Link>
-          </Button>
-        </div>
-      </section>
-
-      <section className="wrapper my-8">
-        <Collection 
-          data={organizedEvents?.data}
-          emptyTitle="No events have been created yet"
-          emptyStateSubtext="Go create some now"
-          collectionType="Events_Organized"
-          limit={3}
-          page={eventsPage}
-          urlParamName="eventsPage"
-          totalPages={organizedEvents?.totalPages}
-        />
-      </section>
-    </>
-  )
-}
-
-export default ProfilePage
+export default Page;
