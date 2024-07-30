@@ -6,19 +6,22 @@ import { redirect } from "next/navigation";
 import React from "react";
 
 const Page = async () => {
-  const { userId } = auth();
+	const { userId } = auth();
 
-  if (!userId) {
-    redirect("/sign-in");
-  }
+	if (!userId) {
+		redirect("/sign-in");
+	}
 
-  const user = await getUserByClerkId(userId);
+	const user = await getUserByClerkId(userId);
 
-  return (
-    <>
-      <EventForm userId={user._id} type="create" />
-    </>
-  );
+	return (
+		<>
+			<EventForm
+				userId={user._id}
+				type="create"
+			/>
+		</>
+	);
 };
 
 export default Page;

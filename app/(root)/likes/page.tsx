@@ -6,35 +6,40 @@ import { redirect } from "next/navigation";
 import React from "react";
 
 const Page = async () => {
-  const { userId } = auth();
+	const { userId } = auth();
 
-  if (!userId) {
-    redirect("/sign-in");
-  }
+	if (!userId) {
+		redirect("/sign-in");
+	}
 
-  const user = await getUserByClerkId(userId);
+	const user = await getUserByClerkId(userId);
 
-  const likedEvents = await getLikedEvents(user._id);
+	const likedEvents = await getLikedEvents(user._id);
 
-  return (
-    <div>
-      <h1 className="text-4xl max-sm:text-2xl font-bold text-center bg-gradient-to-r from-violet-600 to-primary bg-clip-text text-transparent mb-5">
-        Liked Events
-      </h1>
-      <div className="flex justify-evenly items-center gap-10 flex-wrap">
-        {likedEvents.length > 0 ? (
-          likedEvents.map((event: any) => {
-            return <EventCard key={event._id} event={event} />;
-          })
-        ) : (
-          <NoResults
-            title="No Liked Events"
-            desc="You haven't liked any events yet."
-          />
-        )}
-      </div>
-    </div>
-  );
+	return (
+		<div>
+			<h1 className="text-4xl max-sm:text-2xl font-bold text-center bg-gradient-to-r from-violet-600 to-primary bg-clip-text text-transparent mb-5">
+				Liked Events
+			</h1>
+			<div className="flex justify-evenly items-center gap-10 flex-wrap">
+				{likedEvents.length > 0 ? (
+					likedEvents.map((event: any) => {
+						return (
+							<EventCard
+								key={event._id}
+								event={event}
+							/>
+						);
+					})
+				) : (
+					<NoResults
+						title="No Liked Events"
+						desc="You haven't liked any events yet."
+					/>
+				)}
+			</div>
+		</div>
+	);
 };
 
 export default Page;
