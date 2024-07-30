@@ -3,7 +3,6 @@ import EventCards from "@/components/shared/EventCards";
 import NoResults from "@/components/shared/NoResults";
 import Pagination from "@/components/shared/Pagination";
 import SearchBar from "@/components/shared/SearchBar";
-import SwiperComponent from "@/components/shared/SwiperComponent";
 import { getCategoryByName } from "@/lib/actions/category.action";
 import { getEvents, getEventsByCategory } from "@/lib/actions/event.action";
 
@@ -30,7 +29,6 @@ export default async function Home({ searchParams }: Props) {
 
 	return (
 		<>
-			{/* <SwiperComponent /> */}
 			<h2 className="text-4xl max-sm:text-2xl font-bold text-center bg-gradient-to-r from-violet-600 to-primary bg-clip-text text-transparent mb-10 pt-20">
 				Search for Events in your Campus
 			</h2>
