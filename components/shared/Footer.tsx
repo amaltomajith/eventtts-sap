@@ -19,8 +19,10 @@ const Footer = () => {
 					Eventtts
 				</Link>
 			</div>
-			<Link href={"https://yash-yerunkar.vercel.app/"}>
-				<p className="text-sm font-serif">© 2024 Yash Yerunkar</p>
+			<Link href={"https://christuniversity.in/"}>
+				<p className="font-bold max-sm:text-2xl bg-gradient-to-r from-violet-600 to-primary bg-clip-text text-transparent">
+					© 2024 IIIC CHRIST UNIVERSITY
+				</p>
 			</Link>
 		</div>
 	);

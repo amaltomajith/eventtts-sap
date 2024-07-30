@@ -1,75 +1,75 @@
-import { MdNightlife } from "react-icons/md";
-import { MdAddBusiness } from "react-icons/md";
-import { IoFastFood } from "react-icons/io5";
-import { IoGameController } from "react-icons/io5";
-import { FaMasksTheater } from "react-icons/fa6";
-import { MdComputer } from "react-icons/md";
 import { MdEventNote } from "react-icons/md";
 import { MdSportsGymnastics } from "react-icons/md";
+import { FaMasksTheater } from "react-icons/fa6";
 import { GrWorkshop } from "react-icons/gr";
-import { FaMusic } from "react-icons/fa6";
-import { MdOutlineHealthAndSafety } from "react-icons/md";
+import { RiCodeSSlashFill } from "react-icons/ri";
+import { FaChalkboard } from "react-icons/fa";
+import { MdAttachMoney } from "react-icons/md";
+import { GiMedicalPackAlt } from "react-icons/gi";
+import { CgToolbox } from "react-icons/cg";
+import { FaRegQuestionCircle } from "react-icons/fa";
+import { FaChalkboardTeacher } from "react-icons/fa";
 
 interface Category {
-  icon: JSX.Element;
-  title: string;
-  path: string;
+	icon: JSX.Element;
+	title: string;
+	path: string;
 }
 
 export const categories: Category[] = [
-  {
-    icon: <MdNightlife />,
-    title: "Parties",
-    path: "?category=parties",
-  },
-  {
-    icon: <MdAddBusiness />,
-    title: "Business",
-    path: "?category=business",
-  },
-  {
-    icon: <IoFastFood />,
-    title: "Food & Drink",
-    path: "?category=food",
-  },
-  {
-    icon: <IoGameController />,
-    title: "Hobbies",
-    path: "?category=hobbies",
-  },
-  {
-    icon: <MdComputer />,
-    title: "Tech and Innovation",
-    path: "?category=tech",
-  },
-  {
-    icon: <FaMasksTheater />,
-    title: "Performing & Visual Arts",
-    path: "?category=performing",
-  },
-  {
-    icon: <MdEventNote />,
-    title: "Exhibitions",
-    path: "?category=exhibitions",
-  },
-  {
-    icon: <MdSportsGymnastics />,
-    title: "Sports & Fitness",
-    path: "?category=sports",
-  },
-  {
-    icon: <GrWorkshop />,
-    title: "Seminars, Workshops and Conferences",
-    path: "?category=seminars",
-  },
-  {
-    icon: <FaMusic />,
-    title: "Concerts and Music",
-    path: "?category=concerts",
-  },
-  {
-    icon: <MdOutlineHealthAndSafety />,
-    title: "Health and Wellness",
-    path: "?category=health",
-  },
+	{
+		icon: <FaChalkboardTeacher />,
+		title: "Seminars",
+		path: "?category=seminars",
+	},
+	{
+		icon: <GrWorkshop />,
+		title: "Workshops",
+		path: "?category=workshops",
+	},
+	{
+		icon: <RiCodeSSlashFill />,
+		title: "Hackathons",
+		path: "?category=hackathons",
+	},
+	{
+		icon: <FaRegQuestionCircle />,
+		title: "Quizzes",
+		path: "?category=quizzes",
+	},
+	{
+		icon: <FaChalkboard />,
+		title: "Exhibitions",
+		path: "?category=exhibitions",
+	},
+	{
+		icon: <FaMasksTheater />,
+		title: "Theatre",
+		path: "?category=theatre",
+	},
+	{
+		icon: <MdSportsGymnastics />,
+		title: "Sports",
+		path: "?category=sports",
+	},
+	{
+		icon: <MdAttachMoney />,
+		title: "Marketing ",
+		path: "?category=marketing",
+	},
+	{
+		icon: <GiMedicalPackAlt />,
+		title: "Social",
+		path: "?category=social",
+	},
+	{
+		icon: <CgToolbox />,
+		title: "Training ",
+		path: "?category=training",
+	},
+	{
+		icon: <MdEventNote />,
+		title: "Others",
+		path: "?category=others",
+	},
 ];
