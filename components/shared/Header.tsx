@@ -11,17 +11,17 @@ const Header = () => {
 	return (
 		<nav className="flex items-center justify-between p-3 border-b h-14">
 			<div className="flex items-center justify-center gap-2">
-				<Image
-					src={"/images/favicon.ico"}
-					alt="logo"
-					height={24}
-					width={24}
-				/>
 				<Link
-					href={"/"}
-					className="text-3xl font-bold max-sm:text-2xl bg-gradient-to-r from-violet-600 to-primary bg-clip-text text-transparent"
+					href="/"
+					className="flex items-center justify-center gap-2"
 				>
-					Eventtts
+					<Image
+						src="/images/logo-full.png"
+						alt="logo"
+						height={24}
+						width={130}
+						layout="intrinsic"
+					/>
 				</Link>
 			</div>
 

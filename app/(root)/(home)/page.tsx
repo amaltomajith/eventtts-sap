@@ -29,7 +29,7 @@ export default async function Home({ searchParams }: Props) {
 
 	return (
 		<>
-			<h2 className="text-4xl max-sm:text-2xl font-bold text-center bg-gradient-to-r from-violet-600 to-primary bg-clip-text text-transparent mb-10 pt-20">
+			<h2 className="text-4xl max-sm:text-2xl font-bold text-center text-primary bg-clip-text mb-10 pt-20">
 				Search for Events in your Campus
 			</h2>
 			<div className="flex justify-center items-center mb-16">
