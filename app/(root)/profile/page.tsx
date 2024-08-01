@@ -22,12 +22,12 @@ const Page = async () => {
 	return (
 		<div className="flex flex-col gap-5">
 			<div className="flex max-sm:flex-col justify-between max-sm:items-center">
-				<h1 className="text-4xl max-sm:text-2xl font-bold  text-primary mb-5">
+				<h1 className="text-4xl max-sm:text-2xl font-bold  text-primary mb-5 pl-10 pt-5">
 					Events Organized by You
 				</h1>
-				<Link href="/create-event">
+				{/* <Link href="/create-event">
 					<Button className="w-fit">Create Event</Button>
-				</Link>
+				</Link> */}
 			</div>
 			{events.length > 0 ? (
 				<EventCards
