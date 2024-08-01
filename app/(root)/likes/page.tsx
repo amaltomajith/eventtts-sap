@@ -18,7 +18,7 @@ const Page = async () => {
 
 	return (
 		<div>
-			<h1 className="text-4xl max-sm:text-2xl font-bold text-center bg-gradient-to-r from-violet-600 to-primary bg-clip-text text-transparent mb-5">
+			<h1 className="text-4xl max-sm:text-2xl font-bold text-center text-primary mb-5">
 				Liked Events
 			</h1>
 			<div className="flex justify-evenly items-center gap-10 flex-wrap">

@@ -7,54 +7,54 @@ import { redirect } from "next/navigation";
 import React from "react";
 
 const Page = async () => {
-  const { userId } = auth();
+	const { userId } = auth();
 
-  if (!userId) {
-    redirect("/sign-in");
-  }
+	if (!userId) {
+		redirect("/sign-in");
+	}
 
-  const user = await getUserByClerkId(userId);
+	const user = await getUserByClerkId(userId);
 
-  const events = await getOrdersByUserId(user._id);
+	const events = await getOrdersByUserId(user._id);
 
-  const upcomingEvents = events.filter((event: any) => {
-    return new Date(event.event.startDate) > new Date();
-  });
+	const upcomingEvents = events.filter((event: any) => {
+		return new Date(event.event.startDate) > new Date();
+	});
 
-  const pastEvents = events.filter((event: any) => {
-    return new Date(event.event.startDate) < new Date();
-  });
+	const pastEvents = events.filter((event: any) => {
+		return new Date(event.event.startDate) < new Date();
+	});
 
-  return (
-    <div className="flex flex-col gap-10">
-      <h3 className="text-3xl max-sm:text-xl font-bold text-center bg-gradient-to-r from-violet-600 to-primary bg-clip-text text-transparent">
-        Upcoming Events
-      </h3>
-      {upcomingEvents.length > 0 ? (
-        <OrderCards events={upcomingEvents} />
-      ) : (
-        <NoResults
-          title={"You have no upcoming events"}
-          desc={""}
-          link={"/#categories"}
-          linkTitle={"Explore Events"}
-        />
-      )}
-      <h3 className="text-3xl max-sm:text-xl font-bold text-center bg-gradient-to-r from-violet-600 to-primary bg-clip-text text-transparent">
-        Past Events
-      </h3>
-      {pastEvents.length > 0 ? (
-        <OrderCards events={pastEvents} />
-      ) : (
-        <NoResults
-          title={"You don't have any past events"}
-          desc={""}
-          // link={"/#categories"}
-          // linkTitle={"Explore Events"}
-        />
-      )}
-    </div>
-  );
+	return (
+		<div className="flex flex-col gap-10">
+			<h3 className="text-3xl max-sm:text-xl font-bold text-center text-primary">
+				Upcoming Events
+			</h3>
+			{upcomingEvents.length > 0 ? (
+				<OrderCards events={upcomingEvents} />
+			) : (
+				<NoResults
+					title={"You have no upcoming events"}
+					desc={""}
+					link={"/#categories"}
+					linkTitle={"Explore Events"}
+				/>
+			)}
+			<h3 className="text-3xl max-sm:text-xl font-bold text-center text-primary">
+				Past Events
+			</h3>
+			{pastEvents.length > 0 ? (
+				<OrderCards events={pastEvents} />
+			) : (
+				<NoResults
+					title={"You don't have any past events"}
+					desc={""}
+					// link={"/#categories"}
+					// linkTitle={"Explore Events"}
+				/>
+			)}
+		</div>
+	);
 };
 
 export default Page;

@@ -9,38 +9,41 @@ import { redirect } from "next/navigation";
 import React from "react";
 
 const Page = async () => {
-  const { userId } = auth();
+	const { userId } = auth();
 
-  if (!userId) {
-    redirect("/sign-in");
-  }
+	if (!userId) {
+		redirect("/sign-in");
+	}
 
-  const user = await getUserByClerkId(userId);
+	const user = await getUserByClerkId(userId);
 
-  const events = await getEventsByUserId(user._id);
+	const events = await getEventsByUserId(user._id);
 
-  return (
-    <div className="flex flex-col gap-5">
-      <div className="flex max-sm:flex-col justify-between max-sm:items-center">
-        <h1 className="text-4xl max-sm:text-2xl font-bold  bg-gradient-to-r from-violet-600 to-primary bg-clip-text text-transparent mb-5">
-          Events Organized by You
-        </h1>
-        <Link href="/create-event">
-          <Button className="w-fit">Create Event</Button>
-        </Link>
-      </div>
-      {events.length > 0 ? (
-        <EventCards events={events} page="profile" />
-      ) : (
-        <NoResults
-          title={"You have not created any events yet."}
-          desc={"create your first event now!"}
-          // link={"/#categories"}
-          // linkTitle={"Explore Events"}
-        />
-      )}
-    </div>
-  );
+	return (
+		<div className="flex flex-col gap-5">
+			<div className="flex max-sm:flex-col justify-between max-sm:items-center">
+				<h1 className="text-4xl max-sm:text-2xl font-bold  text-primary mb-5">
+					Events Organized by You
+				</h1>
+				<Link href="/create-event">
+					<Button className="w-fit">Create Event</Button>
+				</Link>
+			</div>
+			{events.length > 0 ? (
+				<EventCards
+					events={events}
+					page="profile"
+				/>
+			) : (
+				<NoResults
+					title={"You have not created any events yet."}
+					desc={"create your first event now!"}
+					link={"/"}
+					linkTitle={"Explore Events"}
+				/>
+			)}
+		</div>
+	);
 };
 
 export default Page;
