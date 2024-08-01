@@ -527,7 +527,7 @@ const EventForm = (props: Props) => {
 											disabled={(date) =>
 												date < new Date()
 											}
-											initialFocus
+											// initialFocus
 										/>
 									</PopoverContent>
 								</Popover>
@@ -577,7 +577,7 @@ const EventForm = (props: Props) => {
 												date <
 												form.getValues().startDate
 											}
-											initialFocus
+											// initialFocus
 										/>
 									</PopoverContent>
 								</Popover>
