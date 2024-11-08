@@ -48,7 +48,7 @@ const SearchBar = ({ route, placeholder, otherClasses }: customTypes) => {
 
   return (
     <div
-      className={`w-auto h-10 p-4 ml-1 rounded-[10px] border bg-slate-50 border-slate-300 flex justify-center items-center gap-2.5 dark:bg-gradient-to-b from-gray-900 to-zinc-900 dark:border-slate-800 max-sm:w-52 max-sm:ml-2 max-sm:h-5 ${otherClasses}`}
+      className={`w-2000 h-10 p-4 ml-1 rounded-[10px] border bg-slate-50 border-slate-300 flex justify-center items-center gap-2.5 dark:bg-gradient-to-b from-gray-900 to-zinc-900 dark:border-slate-800 max-sm:w-52 max-sm:ml-2 max-sm:h-5 ${otherClasses}`}
     >
       <Image
         src="/images/search.svg"

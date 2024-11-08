@@ -39,21 +39,22 @@ export default async function Home({ searchParams }: Props) {
 					otherClasses="w-96"
 				/>
 			</div>
+			<Categories />
 			{events.length > 0 ? (
 				<EventCards events={events} />
 			) : (
 				<NoResults
-					title={"No events found"}
-					desc={""}
-					link={"/#categories"}
-					linkTitle={"Explore Events"}
+				title={"No events found"}
+				desc={""}
+				link={"/#categories"}
+				linkTitle={"Explore Events"}
 				/>
 			)}
 			<Pagination
 				page={searchParams.page ? +searchParams.page : 1}
 				totalPages={totalPages}
 			/>
-			<Categories />
+			
 		</>
 	);
 }
