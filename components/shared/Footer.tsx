@@ -1,22 +1,30 @@
 import Image from "next/image";
 import Link from "next/link";
+import React from "react";
 
 const Footer = () => {
 	return (
-		<footer className="border-t">
-			<div className="flex-center wrapper flex-between flex flex-col gap-4 p-5 text-center sm:flex-row">
-				<Link href="/">
+		<div className="flex max-sm:flex-col justify-between items-center mt-5 p-2 max-sm:gap-1">
+			<div className="flex items-center justify-center gap-2">
+				<Link
+					href="/"
+					className="flex items-center justify-center gap-2"
+				>
 					<Image
-						src="/assets/images/logo.png"
+						src="/images/logo-full.png"
 						alt="logo"
-						width={128}
-						height={38}
+						height={24}
+						width={120}
+						layout="intrinsic"
 					/>
 				</Link>
-
-				<p>2023 Eventts. All Rights reserved.</p>
 			</div>
-		</footer>
+			<Link href="https://christuniversity.in/">
+				<p className="font-bold max-sm:text-2xl text-primary">
+					© 2024 IIIC CHRIST UNIVERSITY
+				</p>
+			</Link>
+		</div>
 	);
 };
 

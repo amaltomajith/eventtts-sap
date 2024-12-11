@@ -1,49 +1,60 @@
-import { SignedIn, SignedOut, UserButton } from "@clerk/nextjs";
+import { sidebarLinks } from "@/constants/sidebarLinks";
 import Image from "next/image";
 import Link from "next/link";
+import React from "react";
+import { ModeToggle } from "../ui/ModeToggle";
+import { SignedOut, UserButton } from "@clerk/nextjs";
 import { Button } from "../ui/button";
-import NavItems from "./NavItems";
 import MobileNav from "./MobileNav";
 
 const Header = () => {
 	return (
-		<header className="w-full border-b">
-			<div className="wrapper flex items-center justify-between">
+		<nav className="flex items-center justify-between p-3 border-b h-14">
+			<div className="flex items-center justify-center gap-2">
 				<Link
 					href="/"
-					className="w-36"
+					className="flex items-center justify-center gap-2"
 				>
 					<Image
-						src="/assets/images/logo.png"
-						width={128}
-						height={38}
-						alt="Eventts logo"
+						src="/images/logo-full.png"
+						alt="logo"
+						height={24}
+						width={130}
+						layout="intrinsic"
 					/>
 				</Link>
+			</div>
 
-				<SignedIn>
-					<nav className="md:flex-between hidden w-full max-w-xs">
-						<NavItems />
-					</nav>
-				</SignedIn>
-
-				<div className="flex w-32 justify-end gap-3">
-					<SignedIn>
-						<UserButton afterSignOutUrl="/" />
-						<MobileNav />
-					</SignedIn>
+			<div className="flex justify-center items-center gap-4">
+				<div className="flex items-center justify-center gap-5 font-semibold max-md:hidden">
+					{sidebarLinks.map((link) => {
+						return (
+							<Link
+								href={link.path}
+								key={link.label}
+								className="flex items-center justify-center gap-2 hover:text-primary hover:scale-105 hover:underline-offset-8 hover:underline transition-all"
+							>
+								<div className="scale-110">{link.image}</div>
+								<p>{link.label}</p>
+							</Link>
+						);
+					})}
+				</div>
+				<div className="flex justify-center items-center gap-4 max-sm:gap-1">
+					<ModeToggle />
+					<UserButton afterSignOutUrl="/" />
 					<SignedOut>
 						<Button
-							asChild
-							className="rounded-full"
-							size="lg"
+							size={"sm"}
+							className="font-semibold"
 						>
-							<Link href="/sign-in">Login</Link>
+							<Link href="/sign-in">Log In</Link>
 						</Button>
 					</SignedOut>
+					<MobileNav />
 				</div>
 			</div>
-		</header>
+		</nav>
 	);
 };
 
