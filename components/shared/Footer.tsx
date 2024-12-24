@@ -15,7 +15,6 @@ const Footer = () => {
 						alt="logo"
 						height={24}
 						width={120}
-						layout="intrinsic"
 					/>
 				</Link>
 			</div>

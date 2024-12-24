@@ -6,7 +6,7 @@ const Categories = () => {
 	return (
 		<div
 			id="categories"
-			className="flex overflow-x-auto justify-between items-start text-center gap-10 max-sm:gap-5 mb-16 px-20"
+			className="flex flex-wrap justify-center md:justify-between items-center text-center gap-10 max-sm:gap-5 mb-16 px-5 md:px-20"
 		>
 			{categories.map((item) => {
 				return (

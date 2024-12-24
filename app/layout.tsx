@@ -31,9 +31,9 @@ export default function RootLayout({
 	children: React.ReactNode;
 }) {
 	return (
+			<html lang="en" className={`${inter.className}`}>
 		<ClerkProvider>
-			<html lang="en">
-				<body className={`${inter.className}`}>
+				<body suppressHydrationWarning>
 					<ThemeProvider
 						attribute="class"
 						defaultTheme="system"
@@ -45,7 +45,7 @@ export default function RootLayout({
 					<Toaster />
 					<SpeedInsights />
 				</body>
-			</html>
 		</ClerkProvider>
+			</html>
 	);
 }

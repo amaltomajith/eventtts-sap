@@ -20,7 +20,6 @@ const Header = () => {
 						alt="logo"
 						height={24}
 						width={130}
-						layout="intrinsic"
 					/>
 				</Link>
 			</div>
