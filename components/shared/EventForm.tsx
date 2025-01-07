@@ -254,6 +254,65 @@ const EventForm = (props: Props) => {
 								<FormLabel>
 									Category <span className="text-red-700">*</span>
 								</FormLabel>
+
+								{/* <Popover>
+									<PopoverTrigger asChild>
+										<FormControl>
+											<Button
+												variant="outline"
+												role="combobox"
+												className={cn(
+													"w-full justify-between",
+													!field.value &&
+													"text-muted-foreground"
+												)}
+											>
+												{field.value
+													? categories.find(
+														(category) =>
+															category.title ===
+															field.value
+													)?.title
+													: "Select category"}
+												<ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+											</Button>
+										</FormControl>
+									</PopoverTrigger>
+									<PopoverContent className="p-0">
+										<Command>
+											<CommandInput placeholder="Search category..." />
+											<CommandEmpty>
+												No category found.
+											</CommandEmpty>
+											<CommandGroup className="h-52 overflow-auto">
+												{categories.map((category) => (
+													<CommandItem
+														value={category.title}
+														key={category.title}
+														onSelect={() => {
+															form.setValue(
+																"category",
+																category.title
+															);
+														}}
+													>
+														<Check
+															className={cn(
+																"mr-2 h-4 w-4",
+																category.title ===
+																	field.value
+																	? "opacity-100"
+																	: "opacity-0"
+															)}
+														/>
+														{category.title}
+													</CommandItem>
+												))}
+											</CommandGroup>
+										</Command>
+									</PopoverContent>
+								</Popover> */}
+
 								<FormControl className="flex flex-auto">
 									<select
 										className="w-full px-3 py-2 border rounded-md bg-slate-200 text-black focus:outline-none focus:ring-2 focus:ring-red-500"
