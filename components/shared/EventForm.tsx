@@ -74,11 +74,13 @@ interface Props {
 }
 
 const EventForm = (props: Props) => {
+	console.log(typeof categories)
 	const { toast } = useToast();
 	const router = useRouter();
 
 	const [isSubmitting, setIsSubmitting] = useState(false);
 	const [files, setFiles] = useState<File[]>([]);
+	const [CategoryData, setCatrgoryData] = useState([...categories])
 
 	const { startUpload } = useUploadThing("imageUploader");
 
@@ -244,77 +246,35 @@ const EventForm = (props: Props) => {
 							</FormItem>
 						)}
 					/>
-
 					<FormField
 						control={form.control}
 						name="category"
 						render={({ field }) => (
-							<FormItem className="flex flex-col w-full gap-1.5">
+							<FormItem className="w-full">
 								<FormLabel>
-									Category{" "}
-									<span className="text-red-700">*</span>
+									Category <span className="text-red-700">*</span>
 								</FormLabel>
-								<Popover>
-									<PopoverTrigger asChild>
-										<FormControl>
-											<Button
-												variant="outline"
-												role="combobox"
-												className={cn(
-													"w-full justify-between",
-													!field.value &&
-														"text-muted-foreground"
-												)}
-											>
-												{field.value
-													? categories.find(
-															(category) =>
-																category.title ===
-																field.value
-													  )?.title
-													: "Select category"}
-												<ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-											</Button>
-										</FormControl>
-									</PopoverTrigger>
-									<PopoverContent className="p-0">
-										<Command>
-											<CommandInput placeholder="Search category..." />
-											<CommandEmpty>
-												No category found.
-											</CommandEmpty>
-											<CommandGroup className="h-52 overflow-auto">
-												{categories.map((category) => (
-													<CommandItem
-														value={category.title}
-														key={category.title}
-														onSelect={() => {
-															form.setValue(
-																"category",
-																category.title
-															);
-														}}
-													>
-														<Check
-															className={cn(
-																"mr-2 h-4 w-4",
-																category.title ===
-																	field.value
-																	? "opacity-100"
-																	: "opacity-0"
-															)}
-														/>
-														{category.title}
-													</CommandItem>
-												))}
-											</CommandGroup>
-										</Command>
-									</PopoverContent>
-								</Popover>
+								<FormControl className="flex flex-auto">
+									<select
+										className="w-full px-3 py-2 border rounded-md bg-slate-200 text-black focus:outline-none focus:ring-2 focus:ring-red-500"
+										{...field}
+									>
+										<option value="" disabled>
+											Select a category
+										</option>
+										{CategoryData?.map((category, index) => (
+											<option value={category.title} key={index}>
+												{category.title}
+											</option>
+										))}
+									</select>
+								</FormControl>
 								<FormMessage />
 							</FormItem>
 						)}
 					/>
+
+
 				</div>
 
 				<FormField
@@ -333,7 +293,7 @@ const EventForm = (props: Props) => {
 											handleKeyDown(e, field)
 										}
 										className="min-h-min"
-										// placeholder="Add tags and press enter or `,` to add them."
+									// placeholder="Add tags and press enter or `,` to add them."
 									/>
 
 									{field.value.length > 0 && (
@@ -344,22 +304,22 @@ const EventForm = (props: Props) => {
 														{tag}
 														{props.type !==
 															"edit" && (
-															<Image
-																src={
-																	"/images/close.svg"
-																}
-																alt="close"
-																height={12}
-																width={12}
-																className="ml-1 hover:cursor-pointer"
-																onClick={() =>
-																	removeTagHandler(
-																		tag,
-																		field
-																	)
-																}
-															/>
-														)}
+																<Image
+																	src={
+																		"/images/close.svg"
+																	}
+																	alt="close"
+																	height={12}
+																	width={12}
+																	className="ml-1 hover:cursor-pointer"
+																	onClick={() =>
+																		removeTagHandler(
+																			tag,
+																			field
+																		)
+																	}
+																/>
+															)}
 													</Badge>
 												);
 											})}
@@ -500,7 +460,7 @@ const EventForm = (props: Props) => {
 												className={cn(
 													"w-[240px] pl-3 text-left font-normal",
 													!field.value &&
-														"text-muted-foreground"
+													"text-muted-foreground"
 												)}
 											>
 												{field.value ? (
@@ -523,7 +483,7 @@ const EventForm = (props: Props) => {
 											disabled={(date) =>
 												date < new Date()
 											}
-											// initialFocus
+										// initialFocus
 										/>
 									</PopoverContent>
 								</Popover>
@@ -549,7 +509,7 @@ const EventForm = (props: Props) => {
 												className={cn(
 													"w-[240px] pl-3 text-left font-normal",
 													!field.value &&
-														"text-muted-foreground"
+													"text-muted-foreground"
 												)}
 											>
 												{field.value ? (
@@ -573,7 +533,7 @@ const EventForm = (props: Props) => {
 												date <
 												form.getValues().startDate
 											}
-											// initialFocus
+										// initialFocus
 										/>
 									</PopoverContent>
 								</Popover>
@@ -772,12 +732,12 @@ const EventForm = (props: Props) => {
 								? "Updating..."
 								: "Creating..."
 							: props.type === "edit"
-							? "Update Event"
-							: "Create Event"}
+								? "Update Event"
+								: "Create Event"}
 					</Button>
 				</div>
 			</form>
-		</Form>
+		</Form >
 	);
 };
 
