@@ -315,7 +315,7 @@ const EventForm = (props: Props) => {
 
 								<FormControl className="flex flex-auto">
 									<select
-										className="w-full px-3 py-2 border rounded-md bg-slate-200 text-black focus:outline-none focus:ring-2 focus:ring-red-500"
+										className="w-full px-3 py-2 border rounded-md bg-white text-black focus:outline-none focus:ring-2 focus:ring-red-500"
 										{...field}
 									>
 										<option value="" disabled>
