@@ -13,15 +13,7 @@ const Page = async () => {
 		redirect("/sign-in");
 	}
 
-	let user;
-	try {
-		user = await getUserByClerkId(userId);
-	} catch (error) {
-		// Handle case where user doesn't exist in database yet
-		// This can happen right after signup before webhook creates the user
-		console.log("User not found in database yet, redirecting to sign-in:", error);
-		redirect("/sign-in");
-	}
+	const user = await getUserByClerkId(userId);
 
 	const events = await getOrdersByUserId(user._id);
 
@@ -57,8 +49,8 @@ const Page = async () => {
 				<NoResults
 					title={"You don't have any past events"}
 					desc={""}
-				// link={"/#categories"}
-				// linkTitle={"Explore Events"}
+					// link={"/#categories"}
+					// linkTitle={"Explore Events"}
 				/>
 			)}
 		</div>

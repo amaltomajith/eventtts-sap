@@ -49,23 +49,16 @@ const Page = async ({ params }: Props) => {
 	const { userId } = auth();
 
 	let user = null;
-	let likedEvent = false;
+	let likedEvent = null;
 
 	// if (!userId) {
 	//   redirect("/sign-in");
 	// }
 
 	if (userId) {
-		try {
-			user = await getUserByClerkId(userId);
-			likedEvent = user.likedEvents.includes(params.id);
-		} catch (error) {
-			// Handle case where user doesn't exist in database yet
-			// This can happen right after signup before webhook creates the user
-			console.log("User not found in database yet:", error);
-			user = null;
-			likedEvent = false;
-		}
+		user = await getUserByClerkId(userId);
+
+		likedEvent = await user.likedEvents.includes(params.id);
 	}
 
 	const event = await getEventById(params.id);
@@ -132,8 +125,8 @@ const Page = async ({ params }: Props) => {
 					<div>
 						{new Date(event.endDate) > new Date(event.startDate)
 							? `${dateConverter(
-								event.startDate
-							)} - ${dateConverter(event.endDate)}`
+									event.startDate
+							  )} - ${dateConverter(event.endDate)}`
 							: `${dateConverter(event.startDate)}`}
 					</div>
 					&nbsp;
