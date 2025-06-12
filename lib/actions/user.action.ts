@@ -1,11 +1,11 @@
-"use server";
+'use server';
 
-import User from "../models/user.model";
-import { connectToDatabase } from "../dbconnection";
-import Event from "../models/event.model";
-import Order from "../models/order.model";
-import { redirect } from "next/dist/server/api-utils";
-import { revalidatePath } from "next/cache";
+import User from '../models/user.model';
+import { connectToDatabase } from '../dbconnection';
+import Event from '../models/event.model';
+import Order from '../models/order.model';
+import { redirect } from 'next/dist/server/api-utils';
+import { revalidatePath } from 'next/cache';
 export interface CreateUserParams {
 	clerkId: string;
 	email: string;
@@ -18,12 +18,17 @@ export interface CreateUserParams {
 export async function createUser(userData: CreateUserParams) {
 	try {
 		await connectToDatabase();
+		console.log(`Creating user in database for clerkId: ${userData.clerkId}`);
 
 		const user = await User.create(userData);
+		console.log(`User created successfully with _id: ${user._id}`);
 
 		return JSON.parse(JSON.stringify(user));
 	} catch (error) {
-		console.log(error);
+		console.error(
+			`Error creating user for clerkId ${userData.clerkId}:`,
+			error
+		);
 		throw error;
 	}
 }
@@ -34,12 +39,15 @@ export async function getUserByClerkId(clerkId: string) {
 		const user = await User.findOne({ clerkId: clerkId });
 
 		if (!user) {
-			throw new Error("User not found");
+			console.log(
+				`User not found in database for clerkId: ${clerkId}. This may happen right after signup before webhook creates the user.`
+			);
+			throw new Error('User not found');
 		}
 
 		return JSON.parse(JSON.stringify(user));
 	} catch (error) {
-		console.log(error);
+		console.log('Error in getUserByClerkId:', error);
 		throw error;
 	}
 }
@@ -51,7 +59,7 @@ export async function getUserById(userId: string) {
 		const user = await User.findById(userId);
 
 		if (!user) {
-			throw new Error("User not found");
+			throw new Error('User not found');
 		}
 
 		return JSON.parse(JSON.stringify(user));
@@ -81,7 +89,7 @@ export async function updateUser(params: UpdateUserParams) {
 		);
 
 		if (!user) {
-			throw new Error("User not found");
+			throw new Error('User not found');
 		}
 
 		return JSON.parse(JSON.stringify(user));
@@ -98,7 +106,7 @@ export async function deleteUser(clerkId: string) {
 		const user = await User.findOne({ clerkId: clerkId });
 
 		if (!user) {
-			throw new Error("User not found");
+			throw new Error('User not found');
 		}
 
 		const userEvents = await Event.find({ organizer: user._id });
@@ -131,11 +139,11 @@ export async function likeEvent(eventId: string, userId: string) {
 		const user = await User.findById(userId);
 
 		if (!event) {
-			throw new Error("Event not found");
+			throw new Error('Event not found');
 		}
 
 		if (!user) {
-			throw new Error("Please login to like an event");
+			throw new Error('Please login to like an event');
 		}
 
 		const alreadyLiked = await User.findOne({
@@ -174,14 +182,14 @@ export async function getLikedEvents(userId: string) {
 		const user = await User.findById(userId);
 
 		if (!user) {
-			throw new Error("User not found");
+			throw new Error('User not found');
 		}
 
 		const response = await User.findById(userId).populate({
-			path: "likedEvents",
+			path: 'likedEvents',
 			populate: [
-				{ path: "organizer", model: "User" },
-				{ path: "category", model: "Category" },
+				{ path: 'organizer', model: 'User' },
+				{ path: 'category', model: 'Category' },
 			],
 		});
 

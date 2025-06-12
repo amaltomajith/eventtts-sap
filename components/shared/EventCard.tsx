@@ -17,12 +17,19 @@ const EventCard = async ({ event, page }: Props) => {
   const { userId } = auth();
 
   let user = null;
-
   let likedEvent = false;
 
   if (userId) {
-    user = await getUserByClerkId(userId);
-    likedEvent = await user.likedEvents.includes(event._id);
+    try {
+      user = await getUserByClerkId(userId);
+      likedEvent = user.likedEvents.includes(event._id);
+    } catch (error) {
+      // Handle case where user doesn't exist in database yet
+      // This can happen right after signup before webhook creates the user
+      console.log("User not found in database yet:", error);
+      user = null;
+      likedEvent = false;
+    }
   }
 
   return (
@@ -57,8 +64,8 @@ const EventCard = async ({ event, page }: Props) => {
             <p className="text-sm">
               {new Date(event.endDate) > new Date(event.startDate)
                 ? `${dateConverter(event.startDate)} - ${dateConverter(
-                    event.endDate
-                  )} `
+                  event.endDate
+                )} `
                 : `${dateConverter(event.startDate)}`}
             </p>
             &nbsp;
