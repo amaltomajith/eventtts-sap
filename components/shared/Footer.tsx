@@ -20,7 +20,7 @@ const Footer = () => {
 			</div>
 			<Link href="https://christuniversity.in/">
 				<p className="font-bold max-sm:text-2xl text-primary">
-					© 2024 IIIC CHRIST UNIVERSITY
+					© 2025 CHRIST UNIVERSITY
 				</p>
 			</Link>
 		</div>
