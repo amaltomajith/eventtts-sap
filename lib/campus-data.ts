@@ -4,7 +4,7 @@ export const campusLocations = [
 	{ name: 'Cross Road', lat: 12.86279, lng: 77.437411 },
 	{ name: 'Block 1', lat: 12.863154, lng: 77.437718 },
 	{ name: 'Students Square', lat: 12.862314, lng: 77.43824 },
-	{ name: 'Open Auditorium', lat: 12.862787, lng: 77.43858 },
+	{ name: 'Open Auditorium', lat: 12.862510, lng: 77.438496 },
 	{ name: 'Block 4', lat: 12.862211, lng: 77.43886 },
 	{ name: 'Xpress Cafe', lat: 12.862045, lng: 77.439374 },
 	{ name: 'Block 6', lat: 12.862103, lng: 77.439809 },
