@@ -78,11 +78,11 @@ const locations = [
 export default function CampusLocationsSection() {
   const [selected, setSelected] = useState(0);
   return (
-    <section className="w-full py-10 px-4 bg-black text-white flex flex-col items-center">
-      <h2 className="text-4xl font-bold mb-2 text-center">Campus Locations</h2>
-      <p className="mb-8 text-center text-lg max-w-2xl">
+    <section className="w-full py-10 px-4 bg-white dark:bg-black text-black dark:text-white flex flex-col items-center">
+      <h2 className="text-4xl font-bold mb-2 text-center text-black dark:text-white">Campus Locations</h2>
+      <p className="mb-8 text-center text-lg max-w-2xl text-black dark:text-white">
         Explore the 11 key locations around campus that our AI model can recognize. These are<br />
-        the places you can navigate to and from using <span className="font-bold">C-TRACK</span>.
+        the places you can navigate to and from using <span className="font-bold text-black dark:text-white">C-TRACK</span>.
       </p>
       {/* Tabs in two parallel rows, centered and spaced evenly */}
       <div className="flex flex-col gap-4 w-full max-w-4xl mb-8">
@@ -92,8 +92,8 @@ export default function CampusLocationsSection() {
               key={loc.name}
               className={`px-6 py-2 rounded-md font-medium transition-colors duration-200 focus:outline-none text-base ${
                 selected === idx
-                  ? "bg-white text-black shadow"
-                  : "bg-zinc-800 text-zinc-300 hover:bg-zinc-700"
+                  ? "bg-gray-100 text-black dark:bg-white dark:text-black shadow"
+                  : "bg-zinc-200 text-black dark:bg-zinc-800 dark:text-zinc-300 hover:bg-zinc-300 dark:hover:bg-zinc-700"
               }`}
               onClick={() => setSelected(idx)}
             >
@@ -107,8 +107,8 @@ export default function CampusLocationsSection() {
               key={loc.name}
               className={`px-6 py-2 rounded-md font-medium transition-colors duration-200 focus:outline-none text-base ${
                 selected === idx + 6
-                  ? "bg-white text-black shadow"
-                  : "bg-zinc-800 text-zinc-300 hover:bg-zinc-700"
+                  ? "bg-gray-100 text-black dark:bg-white dark:text-black shadow"
+                  : "bg-zinc-200 text-black dark:bg-zinc-800 dark:text-zinc-300 hover:bg-zinc-300 dark:hover:bg-zinc-700"
               }`}
               onClick={() => setSelected(idx + 6)}
             >
@@ -118,20 +118,30 @@ export default function CampusLocationsSection() {
         </div>
       </div>
       {/* Content card: image and description side by side, max width, rounded corners, centered vertically */}
-      <div className="flex flex-row items-center bg-zinc-900 rounded-lg shadow-lg overflow-hidden w-full max-w-4xl">
-        <img
-          src={locations[selected].image}
-          alt={locations[selected].name}
-          className="w-1/2 h-80 object-cover rounded-md"
-        />
-        <div className="p-8 flex flex-col justify-center w-1/3 min-w-[250px] gap-2 ml-16">
-          <h3 className="text-2xl font-bold mb-2 text-left">{locations[selected].name}</h3>
-          <p className="mb-2 text-zinc-300 text-lg text-left">{locations[selected].description}</p>
-          <span className="font-semibold text-base text-white text-left">
-            Coordinates: <span className="text-zinc-300">{locations[selected].coordinates}</span>
-          </span>
-        </div>
-      </div>
+      <div className="flex flex-row items-center bg-gray-100 dark:bg-zinc-900 rounded-lg shadow-lg overflow-hidden w-full max-w-4xl gap-x-8">
+  {/* Left - Image */}
+  <img
+    src={locations[selected].image}
+    alt={locations[selected].name}
+    className="w-1/2 h-80 object-cover rounded-l-lg"
+  />
+  {/* Right - Centered Text */}
+  <div className="p-8 flex flex-col justify-center items-center w-1/3 min-w-[250px] gap-2 text-center">
+    <h3 className="text-2xl font-bold mb-2 text-black dark:text-white">
+      {locations[selected].name}
+    </h3>
+    <p className="mb-2 text-lg text-black dark:text-zinc-300">
+      {locations[selected].description}
+    </p>
+    <span className="font-semibold text-base text-black dark:text-white">
+      Coordinates:{" "}
+      <span className="text-black dark:text-zinc-300">
+        {locations[selected].coordinates}
+      </span>
+    </span>
+  </div>
+</div>
+
     </section>
   );
 // ...existing code...

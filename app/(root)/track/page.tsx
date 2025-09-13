@@ -283,9 +283,26 @@ export default function LocationDetection() {
   };
 
   // Handle settings change
-  const handleSettingsChange = (newSettings: PredictionSettings) => {
+  const handleSettingsChange = async (newSettings: PredictionSettings) => {
+    // If GPS is being enabled, request permission
+    if (newSettings.gpsEnabled && !predictionSettings.gpsEnabled) {
+      const granted = await requestGPSPermission();
+      if (!granted) {
+        setPredictionSettings(prev => ({ ...prev, gpsEnabled: false }));
+        toast({
+          title: 'GPS Permission Denied',
+          description: 'GPS access is required for location-based predictions',
+          variant: 'destructive',
+        });
+        return;
+      } else {
+        toast({
+          title: 'GPS Enabled',
+          description: 'GPS location access granted successfully',
+        });
+      }
+    }
     setPredictionSettings(newSettings);
-
     // Validate that at least one method is enabled
     if (!newSettings.gpsEnabled && !newSettings.aiEnabled) {
       setPredictionSettings(prev => ({ ...prev, aiEnabled: true }));
@@ -295,7 +312,7 @@ export default function LocationDetection() {
         variant: 'destructive',
       });
     }
-  };
+  }
 
   const resetProcess = () => {
     setLocationState('detection');
@@ -358,16 +375,25 @@ export default function LocationDetection() {
               </div>
             )}
 
-            {/* GPS Status Display */}
-            {predictionSettings.gpsEnabled && currentGPSLocation && (
-              <div className="mb-6 p-4 bg-blue-50 dark:bg-blue-950 rounded-lg border border-blue-200 dark:border-blue-800">
-                <h4 className="font-medium text-blue-900 dark:text-blue-100 mb-2">GPS Status</h4>
-                <div className="text-sm text-blue-700 dark:text-blue-300 space-y-1">
-                  <p>Coordinates: {currentGPSLocation.coordinates.latitude.toFixed(6)}, {currentGPSLocation.coordinates.longitude.toFixed(6)}</p>
-                  {currentGPSLocation.bestMatch && (
-                    <p>Nearest: {currentGPSLocation.bestMatch.name} ({Math.round(currentGPSLocation.bestMatch.distance)}m away)</p>
+            {/* GPS Status Display - always show when GPS enabled, even if not granted yet */}
+            {predictionSettings.gpsEnabled && (
+              <div className="mb-6">
+                <div className="p-4 bg-blue-50 dark:bg-blue-950 rounded-lg border border-blue-200 dark:border-blue-800">
+                  <h4 className="font-medium text-blue-900 dark:text-blue-100 mb-2">GPS Status</h4>
+                  {currentGPSLocation ? (
+                    <div className="text-sm text-blue-700 dark:text-blue-300 space-y-1">
+                      <p>Coordinates: {currentGPSLocation.coordinates.latitude.toFixed(6)}, {currentGPSLocation.coordinates.longitude.toFixed(6)}</p>
+                      {currentGPSLocation.bestMatch && (
+                        <p>Nearest: {currentGPSLocation.bestMatch.name} ({Math.round(currentGPSLocation.bestMatch.distance)}m away)</p>
+                      )}
+                      <p>On Campus: {currentGPSLocation.isOnCampus ? 'Yes' : 'No'}</p>
+                    </div>
+                  ) : (
+                    <div className="flex items-center gap-2 text-blue-700 dark:text-blue-300">
+                      <span className="inline-block w-3 h-3 rounded-full bg-blue-400" />
+                      <span>GPS access granted. Waiting for location...</span>
+                    </div>
                   )}
-                  <p>On Campus: {currentGPSLocation.isOnCampus ? 'Yes' : 'No'}</p>
                 </div>
               </div>
             )}

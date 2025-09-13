@@ -190,12 +190,17 @@ export default function GPSSettings({
                 </p>
               </div>
             </div>
-            <Switch
+            <span
+              role="button"
+              tabIndex={0}
+              aria-checked={settings.gpsEnabled}
+              onClick={() => gpsPermission.granted && handleGPSToggle(!settings.gpsEnabled)}
+              onKeyPress={e => { if ((e.key === 'Enter' || e.key === ' ') && gpsPermission.granted) handleGPSToggle(!settings.gpsEnabled); }}
+              className={`px-4 py-2 rounded-full font-semibold cursor-pointer transition-colors shadow-lg select-none ${settings.gpsEnabled ? 'bg-black text-black' : 'bg-gray-300 text-black'} ${!gpsPermission.granted ? 'opacity-50 cursor-not-allowed' : ''}`}
               id="gps-toggle"
-              checked={settings.gpsEnabled}
-              onCheckedChange={handleGPSToggle}
-              disabled={!gpsPermission.granted}
-            />
+            >
+              {settings.gpsEnabled ? 'Enabled' : 'Disabled'}
+            </span>
           </div>
 
           {/* AI Toggle */}
@@ -211,11 +216,16 @@ export default function GPSSettings({
                 </p>
               </div>
             </div>
-            <Switch
+            <span
+              role="button"
+              tabIndex={0}
+              onClick={() => handleAIToggle(!settings.aiEnabled)}
+              onKeyPress={e => { if (e.key === 'Enter' || e.key === ' ') handleAIToggle(!settings.aiEnabled); }}
+              className={`px-4 py-2 rounded-full font-semibold cursor-pointer transition-colors shadow-lg select-none ${settings.aiEnabled ? 'bg-black text-black' : 'bg-gray-300 text-black'}`}
               id="ai-toggle"
-              checked={settings.aiEnabled}
-              onCheckedChange={handleAIToggle}
-            />
+            >
+              {settings.aiEnabled ? 'Enabled' : 'Disabled'}
+            </span>
           </div>
         </div>
 
