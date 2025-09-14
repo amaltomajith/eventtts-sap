@@ -5,12 +5,13 @@ import { getEventById } from "@/lib/actions/event.action";
 import { auth } from "@clerk/nextjs";
 
 type ReportPageProps = {
-  params: {
+  params: Promise<{
     id: string;
-  };
+  }>;
 };
 
-const ReportPage = async ({ params: { id } }: ReportPageProps) => {
+const ReportPage = async ({ params }: ReportPageProps) => {
+  const { id } = await params;
   const { sessionClaims } = auth();
   const userId = sessionClaims?.userId as string;
 
