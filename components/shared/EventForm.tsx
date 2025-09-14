@@ -276,7 +276,7 @@ const EventForm = ({ userId, type = "create", event, eventId }: Props) => {
 				<FormField
 					control={form.control}
 					name="title"
-					render={({ field }) => (
+					render={({ field }: any) => (
 						<FormItem className="w-full">
 							<FormControl>
 								<Input placeholder="Event title" {...field} className="input-field" />
@@ -290,7 +290,7 @@ const EventForm = ({ userId, type = "create", event, eventId }: Props) => {
 				<FormField
 					control={form.control}
 					name="category"
-					render={({ field }) => (
+					render={({ field }: any) => (
 						<FormItem className="w-full">
 							<FormControl>
 								<select {...field} className="input-field">
@@ -311,7 +311,7 @@ const EventForm = ({ userId, type = "create", event, eventId }: Props) => {
 				<FormField
 					control={form.control}
 					name="tags"
-					render={({ field }) => (
+					render={({ field }: any) => (
 						<FormItem className="w-full">
 							<FormControl>
 								<div>
@@ -345,7 +345,7 @@ const EventForm = ({ userId, type = "create", event, eventId }: Props) => {
 				<FormField
 					control={form.control}
 					name="description"
-					render={({ field }) => (
+					render={({ field }: any) => (
 						<FormItem className="w-full">
 							<FormControl>
 								<Textarea placeholder="Event description" {...field} className="textarea rounded-2xl" />
@@ -359,7 +359,7 @@ const EventForm = ({ userId, type = "create", event, eventId }: Props) => {
 				<FormField
 					control={form.control}
 					name="photo"
-					render={({ field }) => (
+					render={({ field }: any) => (
 						<FormItem className="w-full">
 							<FormControl>
 								<FileUploader
@@ -378,7 +378,7 @@ const EventForm = ({ userId, type = "create", event, eventId }: Props) => {
 					<FormField
 						control={form.control}
 						name="location"
-						render={({ field }) => (
+						render={({ field }: any) => (
 							<FormItem className="w-full">
 								<FormControl>
 									<Input placeholder="Event location or URL" {...field} className="input-field" />
@@ -390,7 +390,7 @@ const EventForm = ({ userId, type = "create", event, eventId }: Props) => {
 					<FormField
 						control={form.control}
 						name="landmark"
-						render={({ field }) => (
+						render={({ field }: any) => (
 							<FormItem className="w-full">
 								<FormControl>
 									<Input placeholder="Nearby landmark" {...field} className="input-field" />
@@ -406,7 +406,7 @@ const EventForm = ({ userId, type = "create", event, eventId }: Props) => {
 					<FormField
 						control={form.control}
 						name="startDate"
-						render={({ field }) => (
+						render={({ field }: any) => (
 							<FormItem className="w-full">
 								<FormControl>
 									<Popover>
@@ -431,7 +431,7 @@ const EventForm = ({ userId, type = "create", event, eventId }: Props) => {
 												mode="single"
 												selected={field.value}
 												onSelect={field.onChange}
-												disabled={(date) =>
+												disabled={(date: Date) =>
 													date < new Date() || date < new Date("1900-01-01")
 												}
 												initialFocus
@@ -447,7 +447,7 @@ const EventForm = ({ userId, type = "create", event, eventId }: Props) => {
 					<FormField
 						control={form.control}
 						name="endDate"
-						render={({ field }) => (
+						render={({ field }: any) => (
 							<FormItem className="w-full">
 								<FormControl>
 									<Popover>
@@ -472,7 +472,7 @@ const EventForm = ({ userId, type = "create", event, eventId }: Props) => {
 												mode="single"
 												selected={field.value}
 												onSelect={field.onChange}
-												disabled={(date) =>
+												disabled={(date: Date) =>
 													date < new Date() || date < new Date("1900-01-01")
 												}
 												initialFocus
@@ -491,7 +491,7 @@ const EventForm = ({ userId, type = "create", event, eventId }: Props) => {
 					<FormField
 						control={form.control}
 						name="startTime"
-						render={({ field }) => (
+						render={({ field }: any) => (
 							<FormItem className="w-full">
 								<FormControl>
 									<Input type="time" {...field} className="input-field" />
@@ -504,7 +504,7 @@ const EventForm = ({ userId, type = "create", event, eventId }: Props) => {
 					<FormField
 						control={form.control}
 						name="endTime"
-						render={({ field }) => (
+						render={({ field }: any) => (
 							<FormItem className="w-full">
 								<FormControl>
 									<Input type="time" {...field} className="input-field" />
@@ -520,7 +520,7 @@ const EventForm = ({ userId, type = "create", event, eventId }: Props) => {
 					<FormField
 						control={form.control}
 						name="isFree"
-						render={({ field }) => (
+						render={({ field }: any) => (
 							<FormItem>
 								<FormControl>
 									<div className="flex items-center">
@@ -546,7 +546,7 @@ const EventForm = ({ userId, type = "create", event, eventId }: Props) => {
 					<FormField
 						control={form.control}
 						name="price"
-						render={({ field }) => (
+						render={({ field }: any) => (
 							<FormItem className="w-full">
 								<FormControl>
 									<div className="flex-center h-[54px] w-full overflow-hidden rounded-full bg-grey-50 px-4 py-2">
@@ -575,7 +575,7 @@ const EventForm = ({ userId, type = "create", event, eventId }: Props) => {
 				<FormField
 					control={form.control}
 					name="totalCapacity"
-					render={({ field }) => (
+					render={({ field }: any) => (
 						<FormItem className="w-full">
 							<FormControl>
 								<Input
@@ -594,7 +594,7 @@ const EventForm = ({ userId, type = "create", event, eventId }: Props) => {
 				<FormField
 					control={form.control}
 					name="url"
-					render={({ field }) => (
+					render={({ field }: any) => (
 						<FormItem className="w-full">
 							<FormControl>
 								<Input placeholder="Event URL (optional)" {...field} className="input-field" />
@@ -630,7 +630,7 @@ const EventForm = ({ userId, type = "create", event, eventId }: Props) => {
 						</Button>
 					</div>
 
-					{fields.map((field, index) => (
+					{fields.map((field: any, index: number) => (
 						<div key={field.id} className="border rounded-lg p-4">
 							<div className="flex items-center justify-between mb-4">
 								<h4 className="font-medium">Sub Event {index + 1}</h4>
