@@ -1,19 +1,36 @@
-import React from "react";
-import EventCard from "./EventCard";
-import { auth } from "@clerk/nextjs";
-import { getUserByClerkId, likeEvent } from "@/lib/actions/user.action";
+import { IEvent } from "@/lib/models/event.model";
+// ✅ FIX: Use the correct path alias to find the component
+import EventCard from "@/components/shared/EventCard"; 
+import NoResults from "@/components/shared/NoResults";
 
-interface Props {
-  events: any;
-  page?: string;
+interface EventCardsProps {
+  events: IEvent[];
+  currentUserId: string | null;
+  emptyTitle: string;
+  emptyStateSubtext: string;
 }
 
-const EventCards = async ({ events, page }: Props) => {
+const EventCards = ({ events, currentUserId, emptyTitle, emptyStateSubtext }: EventCardsProps) => {
+  if (!events || events.length === 0) {
+    return (
+      <NoResults
+        title={emptyTitle}
+        desc={emptyStateSubtext}
+        link={"/"}
+        linkTitle={"Explore All Events"}
+      />
+    );
+  }
+
   return (
-    <div className="flex justify-evenly items-center gap-10 flex-wrap">
-      {events.map((event: any) => {
-        return <EventCard key={event._id} event={event} page={page} />;
-      })}
+    <div className="grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-3 xl:gap-10">
+      {events.map((event) => (
+        <EventCard 
+          key={event._id} 
+          event={event} 
+          currentUserId={currentUserId} 
+        />
+      ))}
     </div>
   );
 };

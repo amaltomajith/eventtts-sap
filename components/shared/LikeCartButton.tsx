@@ -6,7 +6,6 @@ import { MdOutlineDoNotDisturbOn, MdOutlineShoppingCart } from "react-icons/md";
 import { useToast } from "../ui/use-toast";
 import { likeEvent } from "@/lib/actions/user.action";
 import { Button } from "../ui/button";
-import { loadStripe } from "@stripe/stripe-js";
 import { checkoutOrder } from "@/lib/actions/order.action";
 import {
   Dialog,
@@ -18,220 +17,196 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "../ui/input";
 
-loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!);
-interface Props {
+// Note: Stripe's loadStripe promise should not be called at the top level of a module.
+// It's better to call it inside the component or when it's needed, but for now we'll leave it.
+// import { loadStripe } from "@stripe/stripe-js";
+// loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!);
+
+// ====================================================================================
+// 1. Checkout Dialog Component (Extracted Logic)
+// ====================================================================================
+
+type CheckoutDialogProps = {
   event: any;
   user: any;
-  likedEvent: boolean;
-  option?: string;
-}
+  children: React.ReactNode; // The trigger button/icon will be passed as children
+};
 
-const LikeCartButton = ({ event, user, likedEvent, option }: Props) => {
+const CheckoutDialog = ({ event, user, children }: CheckoutDialogProps) => {
   const { toast } = useToast();
-
-  const disableCart =
-    new Date(event.startDate) < new Date() || event.soldOut || event.ticketsLeft
-      ? event.ticketsLeft <= 0
-      : false;
-
   const [totalTickets, setTotalTickets] = useState(1);
-
   const maxTickets = event.ticketsLeft;
 
-  useEffect(() => {
-    const query = new URLSearchParams(window.location.search);
-    if (query.get("success")) {
-      console.log("Order placed! You will receive an email confirmation.");
-    }
-
-    if (query.get("canceled")) {
-      console.log(
-        "Order canceled -- continue to shop around and checkout when you’re ready."
-      );
-    }
-  }, []);
-
   const handleCheckout = async () => {
+    if (!user) {
+      toast({
+        variant: "destructive",
+        title: "You must be logged in to book an event.",
+      });
+      return;
+    }
+
+    const order = {
+      totalTickets: totalTickets,
+      // ✅ LOGIC FIX: Correctly calculate the total amount
+      totalAmount: event.price * totalTickets,
+      user: user,
+      event: event,
+    };
+
     try {
-      if (!user) {
-        toast({
-          variant: "destructive",
-          title: "You must be logged in to book event.",
-        });
-        return;
-      }
-
-      const order = {
-        totalTickets: totalTickets,
-        totalAmount: event.price,
-        user: user,
-        event: event,
-      };
-
       await checkoutOrder(order);
     } catch (error: any) {
       toast({
         variant: "destructive",
-        title: "Something went wrong.",
-        description: error.message,
-      });
-    }
-  };
-
-  const handleLike = async () => {
-    try {
-      if (!user) {
-        toast({
-          variant: "destructive",
-          title: "You must be logged in to like an event.",
-        });
-        return;
-      }
-
-      likedEvent = await user.likedEvents.includes(event._id);
-
-      await likeEvent(event._id, user._id);
-
-      if (likedEvent) {
-        toast({
-          title: "Event removed from Liked Events.",
-        });
-      } else {
-        toast({
-          title: "Event added to Liked Events.",
-        });
-      }
-    } catch (error: any) {
-      toast({
-        variant: "destructive",
-        title: "Something went wrong.",
+        title: "Something went wrong during checkout.",
         description: error.message,
       });
     }
   };
 
   return (
-    <>
-      {option === "eventPage" ? (
-        <>
-          <div className="flex flex-wrap gap-3">
-            <Button
-              onClick={() => handleLike()}
-              variant={"secondary"}
-              className="flex gap-1 rounded-full hover:scale-105 transition-all"
-            >
-              {!likedEvent && (
-                <span>
-                  <FaRegHeart className="h-5 w-5 text-primary" />
-                </span>
-              )}
-              {likedEvent && (
-                <span>
-                  <FaHeart className="h-5 w-5 text-primary" />
-                </span>
-              )}
-              Like
-            </Button>
-            {!disableCart && (
-              <Dialog>
-                <DialogTrigger>
-                  <Button
-                    // onClick={() => handleCheckout()}
-                    variant={"secondary"}
-                    className="flex gap-1 rounded-full hover:scale-105 transition-all"
-                  >
-                    <MdOutlineShoppingCart className="h-5 w-5 text-primary" />
-                    Book Now
-                  </Button>
-                </DialogTrigger>
-                <DialogContent>
-                  <DialogHeader>
-                    <DialogTitle>Number of Tickets</DialogTitle>
-                    <DialogDescription>
-                      <div className="flex max-sm:flex-col justify-center items-center gap-5 mt-1">
-                        <span className="text-primary text-2xl font-bold">
-                          ₹{event.price * totalTickets}
-                        </span>
-                        <Input
-                          type="number"
-                          min={1}
-                          max={maxTickets}
-                          value={totalTickets}
-                          onChange={(e) => setTotalTickets(+e.target.value)}
-                        />
-                        <Button onClick={() => handleCheckout()}>Book</Button>
-                      </div>
-                    </DialogDescription>
-                  </DialogHeader>
-                </DialogContent>
-              </Dialog>
-            )}
-            {disableCart && (
-              <Button
-                variant={"destructive"}
-                disabled
-                className="flex gap-1 rounded-full hover:scale-105 transition-all"
-              >
-                <MdOutlineDoNotDisturbOn className="h-5 w-5 text-primary" />
-                Sold Out
-              </Button>
-            )}
-          </div>
-        </>
-      ) : (
-        <div className="absolute bottom-1/2 right-1 flex justify-center items-center">
-          <div className="border bg-secondary rounded-full m-1 h-7 w-7 flex justify-center items-center hover:scale-125">
-            {!likedEvent && (
-              <span onClick={() => handleLike()}>
-                <FaRegHeart className="h-full w-full p-1 text-primary" />
+    <Dialog>
+      <DialogTrigger asChild>{children}</DialogTrigger>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>Number of Tickets</DialogTitle>
+          <DialogDescription asChild>
+            <div className="flex flex-col items-center gap-5 mt-4">
+              <span className="text-primary text-3xl font-bold">
+                ₹{event.price * totalTickets}
               </span>
-            )}
-            {likedEvent && (
-              <span onClick={() => handleLike()}>
-                <FaHeart className="h-full w-full p-1 text-primary" />
-              </span>
-            )}
-          </div>
-          {!disableCart && (
-            // <div className="border bg-secondary rounded-full m-1 h-7 w-7 flex justify-center items-center hover:scale-125">
-            //   <span onClick={() => handleCheckout()}>
-            //     <MdOutlineShoppingCart className="h-full w-full p-1 text-primary" />
-            //   </span>
-            // </div>
-            <Dialog>
-              <DialogTrigger>
-                <div className="border bg-secondary rounded-full m-1 h-7 w-7 flex justify-center items-center hover:scale-125">
-                  <span>
-                    <MdOutlineShoppingCart className="h-full w-full p-1 text-primary" />
-                  </span>
-                </div>
-              </DialogTrigger>
-              <DialogContent>
-                <DialogHeader>
-                  <DialogTitle>Number of Tickets</DialogTitle>
-                  <DialogDescription>
-                    <div className="flex max-sm:flex-col justify-center items-center gap-5 mt-1">
-                      <span className="text-primary text-2xl font-bold">
-                        ₹{event.price * totalTickets}
-                      </span>
-                      <Input
-                        type="number"
-                        min={1}
-                        max={maxTickets}
-                        value={totalTickets}
-                        onChange={(e) => setTotalTickets(+e.target.value)}
-                      />
-                      <Button onClick={() => handleCheckout()}>Book</Button>
-                    </div>
-                  </DialogDescription>
-                </DialogHeader>
-              </DialogContent>
-            </Dialog>
-          )}
-        </div>
-      )}
-    </>
+              <div className="flex items-center gap-3">
+                <Input
+                  type="number"
+                  min={1}
+                  max={maxTickets}
+                  value={totalTickets}
+                  onChange={(e) => {
+                    const value = Math.max(1, Math.min(maxTickets, Number(e.target.value)));
+                    setTotalTickets(value);
+                  }}
+                  className="w-24 text-center"
+                />
+                 <span className="text-sm text-gray-500">
+                  (Max: {maxTickets})
+                </span>
+              </div>
+              <Button onClick={handleCheckout} className="w-full">Book Now</Button>
+            </div>
+          </DialogDescription>
+        </DialogHeader>
+      </DialogContent>
+    </Dialog>
   );
+};
+
+// ====================================================================================
+// 2. Main LikeCartButton Component (Refactored & Simplified)
+// ====================================================================================
+
+interface LikeCartButtonProps {
+  event: any;
+  user: any;
+  likedEvent: boolean;
+  option?: string;
+}
+
+const LikeCartButton = ({ event, user, likedEvent, option }: LikeCartButtonProps) => {
+  const { toast } = useToast();
+  
+  // ✅ STATE MANAGEMENT FIX: Use state for the liked status so the UI updates
+  const [isLiked, setIsLiked] = useState(likedEvent);
+
+  // ✅ READABILITY FIX: Simplified logic for disabling the cart
+  const isEventPast = new Date(event.startDate) < new Date();
+  const areTicketsAvailable = event.ticketsLeft > 0 && !event.soldOut;
+  const isCartDisabled = isEventPast || !areTicketsAvailable;
+  
+  // This useEffect can stay as is, it handles the Stripe redirect messages
+  useEffect(() => {
+    const query = new URLSearchParams(window.location.search);
+    if (query.get("success")) {
+      toast({ title: "Order placed successfully!", description: "You will receive an email confirmation." });
+    }
+    if (query.get("canceled")) {
+      toast({ title: "Order canceled.", description: "You can continue to shop around and checkout when you’re ready." });
+    }
+  }, [toast]);
+
+  const handleLike = async () => {
+    if (!user) {
+      toast({
+        variant: "destructive",
+        title: "You must be logged in to like an event.",
+      });
+      return;
+    }
+
+    try {
+      await likeEvent(event._id, user._id);
+      
+      // ✅ STATE MANAGEMENT FIX: Toggle the local state to trigger a re-render
+      setIsLiked((prev) => !prev);
+      
+      toast({
+        title: !isLiked ? "Event added to Liked Events." : "Event removed from Liked Events.",
+      });
+    } catch (error: any) {
+      toast({
+        variant: "destructive",
+        title: "Something went wrong.",
+        description: error.message,
+      });
+    }
+  };
+
+  if (option === "eventPage") {
+    // --- Large Button Layout for the main event page ---
+    return (
+      <div className="flex flex-wrap gap-3">
+        <Button
+          onClick={handleLike}
+          variant="secondary"
+          className="flex gap-1 rounded-full hover:scale-105 transition-all"
+        >
+          {isLiked ? <FaHeart className="h-5 w-5 text-primary" /> : <FaRegHeart className="h-5 w-5 text-primary" />}
+          Like
+        </Button>
+
+        {!isCartDisabled ? (
+          <CheckoutDialog event={event} user={user}>
+            <Button variant="secondary" className="flex gap-1 rounded-full hover:scale-105 transition-all">
+              <MdOutlineShoppingCart className="h-5 w-5 text-primary" />
+              Book Now
+            </Button>
+          </CheckoutDialog>
+        ) : (
+          <Button variant="destructive" disabled className="flex gap-1 rounded-full">
+            <MdOutlineDoNotDisturbOn className="h-5 w-5" />
+            Sold Out
+          </Button>
+        )}
+      </div>
+    );
+  } else {
+    // --- Small Icon Layout for event cards ---
+    return (
+      <div className="absolute top-2 right-2 flex flex-col items-center gap-2">
+        <div className="border bg-white/80 backdrop-blur-sm rounded-full p-1 h-8 w-8 flex justify-center items-center hover:scale-110 transition-transform cursor-pointer" onClick={handleLike}>
+          {isLiked ? <FaHeart className="text-primary" /> : <FaRegHeart className="text-primary" />}
+        </div>
+
+        {!isCartDisabled && (
+          <CheckoutDialog event={event} user={user}>
+            <div className="border bg-white/80 backdrop-blur-sm rounded-full p-1 h-8 w-8 flex justify-center items-center hover:scale-110 transition-transform cursor-pointer">
+              <MdOutlineShoppingCart className="text-primary" />
+            </div>
+          </CheckoutDialog>
+        )}
+      </div>
+    );
+  }
 };
 
 export default LikeCartButton;

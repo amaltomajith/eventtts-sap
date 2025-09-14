@@ -1,17 +1,16 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-	images: {
-		remotePatterns: [
-			{
-				protocol: "http",
-				hostname: "*",
-			},
-			{
-				protocol: "https",
-				hostname: "*",
-			},
-		],
-	},
+  // The 'output: "export"' line has been removed.
+  // This is the only change needed to fix the errors.
+  images: {
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'utfs.io',
+        pathname: '/f/*',
+      },
+    ],
+  },
 };
 
 module.exports = nextConfig;

@@ -1,5 +1,5 @@
 "use client";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
@@ -30,13 +30,12 @@ import {
 	CommandItem,
 } from "@/components/ui/command";
 import { categories } from "@/constants/categories";
-import { createEvent } from "@/lib/actions/event.action";
+import { createEvent, updateEvent } from "@/lib/actions/event.action";
 import { Textarea } from "../ui/textarea";
 import { useToast } from "../ui/use-toast";
 import { useRouter } from "next/navigation";
 import { FileUploader } from "./FileUploader";
 import { useUploadThing } from "@/lib/uploadthing";
-import { th } from "date-fns/locale";
 
 const formSchema = z.object({
 	title: z.string().trim().min(2, {
@@ -60,7 +59,6 @@ const formSchema = z.object({
 	startTime: z.string(),
 	endTime: z.string(),
 	duration: z.string().trim().optional(),
-	// isMultipleDays: z.boolean(),
 	totalCapacity: z.string().trim().optional(),
 	isFree: z.boolean(),
 	price: z.string().trim().optional(),
@@ -68,46 +66,109 @@ const formSchema = z.object({
 	url: z.string().trim().optional(),
 });
 
-interface Props {
-	userId: string;
-	type?: string;
+// Define the Event interface (adjust based on your actual event structure)
+interface IEvent {
+	_id: string;
+	title: string;
+	category: any;
+	tags: any[];
+	description: string;
+	photo: string;
+	isOnline?: boolean;
+	location?: string;
+	landmark?: string;
+	startDate: string | Date;
+	endDate: string | Date;
+	startTime: string;
+	endTime: string;
+	duration?: number;
+	totalCapacity?: number;
+	isFree: boolean;
+	price?: number;
+	ageRestriction?: number;
+	url?: string;
+	organizer: string;
 }
 
-const EventForm = (props: Props) => {
-	console.log(typeof categories)
+interface Props {
+	userId: string;
+	type: "create" | "edit";
+	event?: IEvent;
+	eventId?: string;
+}
+
+const EventForm = ({ userId, type = "create", event, eventId }: Props) => {
 	const { toast } = useToast();
 	const router = useRouter();
 
 	const [isSubmitting, setIsSubmitting] = useState(false);
 	const [files, setFiles] = useState<File[]>([]);
-	const [CategoryData, setCatrgoryData] = useState([...categories])
+	const [CategoryData, setCategoryData] = useState([...categories]);
 
 	const { startUpload } = useUploadThing("imageUploader");
 
-	const form = useForm<z.infer<typeof formSchema>>({
-		resolver: zodResolver(formSchema),
-		defaultValues: {
+	// Helper function to get initial values
+	const getInitialValues = () => {
+		if (event && type === 'edit') {
+			// Extract tag names if tags are objects with _id and name properties
+			const tagNames = event.tags.map(tag => typeof tag === 'object' ? tag.name : tag);
+			
+			return {
+				title: event.title || "",
+				category: event.category._id || event.category || "",
+				tags: tagNames || [],
+				description: event.description || "",
+				photo: event.photo || "",
+				isOnline: event.isOnline || false,
+				location: event.location || "",
+				landmark: event.landmark || "",
+				startDate: new Date(event.startDate),
+				endDate: new Date(event.endDate),
+				startTime: event.startTime || "",
+				endTime: event.endTime || "",
+				duration: event.duration ? event.duration.toString() : "",
+				totalCapacity: event.totalCapacity ? event.totalCapacity.toString() : "",
+				isFree: event.isFree || false,
+				price: event.price ? event.price.toString() : "",
+				ageRestriction: event.ageRestriction ? event.ageRestriction.toString() : "",
+				url: event.url || "",
+			};
+		}
+		
+		// Default values for create mode
+		return {
 			title: "",
-			category: undefined,
+			category: "",
 			tags: [],
 			description: "",
-			photo: undefined,
+			photo: "",
 			isOnline: false,
 			location: "",
 			landmark: "",
-			startDate: undefined,
-			endDate: undefined,
-			startTime: undefined,
-			endTime: undefined,
-			duration: undefined,
-			// isMultipleDays: false,
-			totalCapacity: undefined,
+			startDate: new Date(),
+			endDate: new Date(),
+			startTime: "",
+			endTime: "",
+			duration: "",
+			totalCapacity: "",
 			isFree: false,
-			price: undefined,
-			ageRestriction: undefined,
+			price: "",
+			ageRestriction: "",
 			url: "",
-		},
+		};
+	};
+
+	const form = useForm<z.infer<typeof formSchema>>({
+		resolver: zodResolver(formSchema),
+		defaultValues: getInitialValues(),
 	});
+
+	// Reset form when event data changes (important for edit mode)
+	useEffect(() => {
+		if (event && type === 'edit') {
+			form.reset(getInitialValues());
+		}
+	}, [event, type, form]);
 
 	async function onSubmit(values: z.infer<typeof formSchema>) {
 		setIsSubmitting(true);
@@ -119,55 +180,85 @@ const EventForm = (props: Props) => {
 				const uploadedImages = await startUpload(files);
 
 				if (!uploadedImages) {
-					throw new Error(
-						"Please upload a valid image below of 4MB."
-					);
+					throw new Error("Please upload a valid image below of 4MB.");
 				}
 
 				uploadedImageUrl = uploadedImages[0].url;
 			}
 
-			const event = await createEvent({
-				title: values.title,
-				category: values.category,
-				description: values.description,
-				photo: uploadedImageUrl,
-				isOnline: values.isOnline,
-				location: values.location,
-				landmark: values.landmark,
-				startDate: values.startDate,
-				endDate: values.endDate,
-				startTime: values.startTime,
-				endTime: values.endTime,
-				duration:
-					values.duration === undefined
-						? values.duration
-						: +values.duration,
-				// isMultipleDays: values.isMultipleDays ,
-				totalCapacity:
-					values.totalCapacity === undefined
-						? values.totalCapacity
-						: +values.totalCapacity,
-				isFree: values.isFree,
-				price:
-					values.price === undefined ? values.price : +values.price,
-				tags: values.tags,
-				ageRestriction:
-					values.ageRestriction === undefined
-						? values.ageRestriction
-						: +values.ageRestriction,
-				url: values.url,
-				organizer: props.userId,
-			});
+			if (type === 'edit') {
+				if (!eventId) {
+					throw new Error("Event ID is required for updating.");
+				}
 
-			form.reset();
+				const updatedEvent = await updateEvent({
+					userId,
+					event: {
+						_id: eventId,
+						title: values.title,
+						category: values.category,
+						description: values.description,
+						photo: uploadedImageUrl,
+						isOnline: values.isOnline,
+						location: values.location,
+						landmark: values.landmark,
+						startDate: values.startDate,
+						endDate: values.endDate,
+						startTime: values.startTime,
+						endTime: values.endTime,
+						duration: values.duration && values.duration !== "" ? +values.duration : undefined,
+						totalCapacity: values.totalCapacity && values.totalCapacity !== "" ? +values.totalCapacity : undefined,
+						isFree: values.isFree,
+						price: values.price && values.price !== "" ? +values.price : undefined,
+						tags: values.tags,
+						ageRestriction: values.ageRestriction && values.ageRestriction !== "" ? +values.ageRestriction : undefined,
+						url: values.url,
+						organizer: userId,
+					},
+					path: `/event/${eventId}`
+				});
 
-			router.push(`/event/${event._id}`);
+				if (updatedEvent) {
+					form.reset();
+					router.push(`/event/${updatedEvent._id}`);
+					toast({
+						title: "Success!",
+						description: "Event updated successfully.",
+					});
+				}
+			} else {
+				// Create mode
+				const newEvent = await createEvent({
+					title: values.title,
+					category: values.category,
+					description: values.description,
+					photo: uploadedImageUrl,
+					isOnline: values.isOnline,
+					location: values.location,
+					landmark: values.landmark,
+					startDate: values.startDate,
+					endDate: values.endDate,
+					startTime: values.startTime,
+					endTime: values.endTime,
+					duration: values.duration && values.duration !== "" ? +values.duration : undefined,
+					totalCapacity: values.totalCapacity && values.totalCapacity !== "" ? +values.totalCapacity : undefined,
+					isFree: values.isFree,
+					price: values.price && values.price !== "" ? +values.price : undefined,
+					tags: values.tags,
+					ageRestriction: values.ageRestriction && values.ageRestriction !== "" ? +values.ageRestriction : undefined,
+					url: values.url,
+					organizer: userId,
+				});
 
-			toast({
-				title: "Success!",
-				description: "Event created successfully.",
-			});
+				if (newEvent) {
+					form.reset();
+					router.push(`/event/${newEvent._id}`);
+					toast({
+						title: "Success!",
+						description: "Event created successfully.",
+					});
+				}
+			}
 		} catch (error: any) {
 			toast({
 				variant: "destructive",
@@ -203,23 +294,28 @@ const EventForm = (props: Props) => {
 			} else {
 				form.setError("tags", {
 					type: "validate",
-					message: "Alredy exist",
+					message: "Already exists",
 				});
 				form.trigger();
 			}
 		}
 	};
 
-	const removeTagHandler = (tag: string, field: any) => {
-		const newTags = field.value.filter((t: string) => t !== tag);
-
+	// Update the removeTagHandler to work with both objects and strings
+	const removeTagHandler = (tag: any, field: any) => {
+		const newTags = field.value.filter((t: any) => {
+			if (typeof t === 'object' && typeof tag === 'object') {
+				return t._id !== tag._id;
+			}
+			return t !== tag;
+		});
 		form.setValue("tags", newTags);
 	};
 
 	return (
 		<Form {...form}>
 			<h1 className="text-4xl max-sm:text-2xl font-bold text-center text-primary mb-5">
-				{props.type === "edit" ? "Update Event" : "Create Event"}
+				{type === "edit" ? "Update Event" : "Create Event"}
 			</h1>
 			<br />
 			<form
@@ -254,65 +350,6 @@ const EventForm = (props: Props) => {
 								<FormLabel>
 									Category <span className="text-red-700">*</span>
 								</FormLabel>
-
-								{/* <Popover>
-									<PopoverTrigger asChild>
-										<FormControl>
-											<Button
-												variant="outline"
-												role="combobox"
-												className={cn(
-													"w-full justify-between",
-													!field.value &&
-													"text-muted-foreground"
-												)}
-											>
-												{field.value
-													? categories.find(
-														(category) =>
-															category.title ===
-															field.value
-													)?.title
-													: "Select category"}
-												<ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-											</Button>
-										</FormControl>
-									</PopoverTrigger>
-									<PopoverContent className="p-0">
-										<Command>
-											<CommandInput placeholder="Search category..." />
-											<CommandEmpty>
-												No category found.
-											</CommandEmpty>
-											<CommandGroup className="h-52 overflow-auto">
-												{categories.map((category) => (
-													<CommandItem
-														value={category.title}
-														key={category.title}
-														onSelect={() => {
-															form.setValue(
-																"category",
-																category.title
-															);
-														}}
-													>
-														<Check
-															className={cn(
-																"mr-2 h-4 w-4",
-																category.title ===
-																	field.value
-																	? "opacity-100"
-																	: "opacity-0"
-															)}
-														/>
-														{category.title}
-													</CommandItem>
-												))}
-											</CommandGroup>
-										</Command>
-									</PopoverContent>
-								</Popover> */}
-
 								<FormControl className="flex flex-auto">
 									<select
 										className="w-full px-3 py-2 border rounded-md bg-white text-black focus:outline-none focus:ring-2 focus:ring-red-500"
@@ -332,8 +369,6 @@ const EventForm = (props: Props) => {
 							</FormItem>
 						)}
 					/>
-
-
 				</div>
 
 				<FormField
@@ -345,46 +380,40 @@ const EventForm = (props: Props) => {
 								Tags <span className="text-red-500">*</span>
 							</FormLabel>
 							<FormControl>
-								<>
+								<div>
 									<Textarea
-										disabled={props.type === "edit"}
-										onKeyDown={(e) =>
-											handleKeyDown(e, field)
-										}
+										disabled={type === "edit"}
+										onKeyDown={(e) => handleKeyDown(e, field)}
 										className="min-h-min"
-									// placeholder="Add tags and press enter or `,` to add them."
+										placeholder="Add tags and press enter or `,` to add them."
 									/>
 
 									{field.value.length > 0 && (
-										<div className="flex justify-start items-center gap-2 flex-wrap uppercase">
-											{field.value.map((tag) => {
+										<div className="flex justify-start items-center gap-2 flex-wrap uppercase mt-2">
+											{field.value.map((tag, index) => {
+												// Extract tag name if it's an object
+												const tagName = typeof tag === 'object' ? tag.name : tag;
+												const tagId = typeof tag === 'object' ? tag._id : tag;
+												
 												return (
-													<Badge key={tag}>
-														{tag}
-														{props.type !==
-															"edit" && (
-																<Image
-																	src={
-																		"/images/close.svg"
-																	}
-																	alt="close"
-																	height={12}
-																	width={12}
-																	className="ml-1 hover:cursor-pointer"
-																	onClick={() =>
-																		removeTagHandler(
-																			tag,
-																			field
-																		)
-																	}
-																/>
-															)}
+													<Badge key={tagId || index}>
+														{tagName}
+														{type !== "edit" && (
+															<Image
+																src="/images/close.svg"
+																alt="close"
+																height={12}
+																width={12}
+																className="ml-1 hover:cursor-pointer"
+																onClick={() => removeTagHandler(tag, field)}
+															/>
+														)}
 													</Badge>
 												);
 											})}
 										</div>
 									)}
-								</>
+								</div>
 							</FormControl>
 							<FormDescription>
 								Add atleast 1 tag to describe what your event is
@@ -427,7 +456,6 @@ const EventForm = (props: Props) => {
 									<span className="text-red-700">*</span>
 								</FormLabel>
 								<FormControl>
-									{/* <Input placeholder="A photo for the event." {...field} /> */}
 									<FileUploader
 										onFieldChange={field.onChange}
 										imageUrl={field.value}
@@ -440,12 +468,12 @@ const EventForm = (props: Props) => {
 					/>
 				</div>
 
-				<div className=" flex flex-col gap-5 w-[240px]">
+				<div className="flex flex-col gap-5 w-[240px]">
 					<FormField
 						control={form.control}
 						name="isOnline"
 						render={({ field }) => (
-							<FormItem className="">
+							<FormItem>
 								<FormLabel>Is Online?</FormLabel>
 								<FormControl>
 									<Checkbox
@@ -460,7 +488,7 @@ const EventForm = (props: Props) => {
 						)}
 					/>
 
-					{!form.getValues().isOnline ? (
+					{!form.getValues().isOnline && (
 						<div>
 							<FormField
 								control={form.control}
@@ -496,8 +524,6 @@ const EventForm = (props: Props) => {
 								)}
 							/>
 						</div>
-					) : (
-						""
 					)}
 				</div>
 
@@ -539,10 +565,7 @@ const EventForm = (props: Props) => {
 											mode="single"
 											selected={field.value}
 											onSelect={field.onChange}
-											disabled={(date) =>
-												date < new Date()
-											}
-										// initialFocus
+											disabled={(date) => date < new Date()}
 										/>
 									</PopoverContent>
 								</Popover>
@@ -589,10 +612,8 @@ const EventForm = (props: Props) => {
 											selected={field.value}
 											onSelect={field.onChange}
 											disabled={(date) =>
-												date <
-												form.getValues().startDate
+												date < form.getValues().startDate
 											}
-										// initialFocus
 										/>
 									</PopoverContent>
 								</Popover>
@@ -635,7 +656,6 @@ const EventForm = (props: Props) => {
 									<Input
 										type="time"
 										id="endTime"
-										// min={form.getValues().startTime }
 										{...field}
 									/>
 								</FormControl>
@@ -661,24 +681,6 @@ const EventForm = (props: Props) => {
 							</FormItem>
 						)}
 					/>
-					{/* <FormField
-            control={form.control}
-            name="isMultipleDays"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Recurring Daily for Selected Dates?</FormLabel>
-                <FormControl>
-                  <Checkbox
-                    id="isMultipleDays"
-                    onCheckedChange={field.onChange}
-                    checked={field.value}
-                    className="ml-2"
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          /> */}
 				</div>
 
 				<FormField
@@ -687,8 +689,7 @@ const EventForm = (props: Props) => {
 					render={({ field }) => (
 						<FormItem>
 							<FormLabel>
-								Total sitting Capacity of venue{" "}
-								{/* <span className="text-red-700">*</span> */}
+								Total sitting Capacity of venue
 							</FormLabel>
 							<FormControl>
 								<Input
@@ -722,7 +723,7 @@ const EventForm = (props: Props) => {
 						)}
 					/>
 
-					{!form.getValues().isFree ? (
+					{!form.getValues().isFree && (
 						<FormField
 							control={form.control}
 							name="price"
@@ -740,8 +741,6 @@ const EventForm = (props: Props) => {
 								</FormItem>
 							)}
 						/>
-					) : (
-						""
 					)}
 				</div>
 
@@ -787,16 +786,16 @@ const EventForm = (props: Props) => {
 						disabled={isSubmitting}
 					>
 						{isSubmitting
-							? props.type === "edit"
+							? type === "edit"
 								? "Updating..."
 								: "Creating..."
-							: props.type === "edit"
+							: type === "edit"
 								? "Update Event"
 								: "Create Event"}
 					</Button>
 				</div>
 			</form>
-		</Form >
+		</Form>
 	);
 };
 

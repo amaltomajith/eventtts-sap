@@ -147,3 +147,37 @@ export type SearchParamProps = {
   params: { id: string }
   searchParams: { [key: string]: string | string[] | undefined }
 }
+// types/index.ts
+
+// ... other types
+
+// types/index.ts
+
+// ... other types in your file
+
+export type CreateReportParams = {
+  userId: string;
+  eventId: string;
+  path: string;
+  report: {
+    preparedBy: string;
+    eventPurpose: string;
+    keyHighlights: string;
+    majorOutcomes: string;
+    objective: string;
+    targetAudience: string;
+    eventGoals: string;
+    agenda: string;
+    // --- FIX: Make optional fields match the form schema ---
+    partners?: string; 
+    budgetAllocation: string;
+    vips?: string;
+    keySessions?: string;
+    photos?: string;
+    budget: string;
+    sponsorship?: string;
+    actualExpenditure: string;
+  };
+};
+
+// ... other types in your file
