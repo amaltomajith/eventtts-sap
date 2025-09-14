@@ -13,29 +13,32 @@ import React from "react";
 import { headers } from "next/headers";
 
 interface Props {
-    params: Promise<{ id: string }>;
+	params: Promise<{ id: string }>;
 }
 
 const Page = async ({ params }: Props) => {
-	const { userId } = auth();
+	// ✅ FIX: Await headers() and params at the top for Next.js 15 compatibility
+	await headers();
+	const awaitedParams = await params;
 
+	const { userId } = auth();
 	let user = null;
-	let likedEvent = null;
+	let likedEvent = false;
 
 	if (userId) {
 		user = await getUserByClerkId(userId);
 		if (user) {
-			likedEvent = user.likedEvents.includes(params.id);
+			likedEvent = user.likedEvents.includes(awaitedParams.id);
 		}
 	}
 
-	const event = await getEventById(params.id);
+	const event = await getEventById(awaitedParams.id);
 
 	if (!event) {
 		return <NoResults title="Event not found" desc="The event you are looking for does not exist." link="/" linkTitle="Go Home" />;
 	}
 
-	const relatedEvents = !event.parentEvent ? await getRelatedEvents(params.id) : [];
+	const relatedEvents = !event.parentEvent ? await getRelatedEvents(awaitedParams.id) : [];
 
 	return (
 		<div className="font-medium md:mx-24">
@@ -62,17 +65,17 @@ const Page = async ({ params }: Props) => {
 						className="text-base"
 						variant={"secondary"}
 					>
-						{event.category.name}
+						{(event.category as any)?.name || 'Uncategorized'}
 					</Badge>
 					<Badge
 						className="text-base"
 						variant={"secondary"}
-					>{`By ${event.organizer?.firstName} ${event.organizer?.lastName}`}</Badge>
+					>{`By ${(event.organizer as any)?.firstName || ''} ${(event.organizer as any)?.lastName || ''}`}</Badge>
 				</div>
 
 				<LikeCartButton
-					event={event}
-					user={user}
+					event={JSON.parse(JSON.stringify(event))}
+					user={JSON.parse(JSON.stringify(user))}
 					likedEvent={likedEvent}
 					option="eventPage"
 				/>
@@ -81,9 +84,9 @@ const Page = async ({ params }: Props) => {
 					<div>
 						{new Date(event.endDate) > new Date(event.startDate)
 							? `${dateConverter(
-									event.startDate
-							  )} - ${dateConverter(event.endDate)}`
-							: `${dateConverter(event.startDate)}`}
+								event.startDate.toString()
+							)} - ${dateConverter(event.endDate.toString())}`
+							: `${dateConverter(event.startDate.toString())}`}
 					</div>
 					&nbsp;
 					<div>
@@ -124,146 +127,34 @@ const Page = async ({ params }: Props) => {
 
 			{event.subEvents && event.subEvents.length > 0 && (
 				<div className="mt-10">
-				<h2 className="text-4xl max-sm:text-2xl mt-3 text-center text-primary font-bold">
-					Sub-Events
-				</h2>
-				<br />
-				<div className="flex flex-wrap justify-center gap-5">
-					{event.subEvents.map((subEvent: any) => (
-					<EventCard key={subEvent._id} event={subEvent} />
-					))}
-				</div>
+					<h2 className="text-4xl max-sm:text-2xl mt-3 text-center text-primary font-bold">
+						Sub-Events
+					</h2>
+					<br />
+					<div className="flex flex-wrap justify-center gap-5">
+						{event.subEvents.map((subEvent: any) => (
+							<EventCard key={subEvent._id} event={subEvent} currentUserId={userId} />
+						))}
+					</div>
 				</div>
 			)}
 
-			{!event.parentEvent && (
+			{!event.parentEvent && relatedEvents.length > 0 && (
 				<div className="mt-10">
 					<h2 className="text-4xl max-sm:text-2xl mt-3 text-center text-primary font-bold">
 						Related Events
 					</h2>
 					<br />
-					{relatedEvents.length > 0 ? (
-						<EventCards events={relatedEvents} />
-					) : (
-						<NoResults
-							title={"No Related Events Found"}
-							desc={"."}
-							link={"/#categories"}
-							linkTitle={"Explore Events"}
-						/>
-					)}
+					<EventCards
+						events={relatedEvents}
+						currentUserId={userId}
+						emptyTitle="No Related Events Found"
+						emptyStateSubtext="Check out other events below"
+					/>
 				</div>
 			)}
 		</div>
 	);
-=======
-    // ✅ FIX: Await headers() and params at the top
-    await headers();
-    const awaitedParams = await params;
-
-    const { userId } = auth();
-    let user = null;
-    let likedEvent = false;
-
-    if (userId) {
-        user = await getUserByClerkId(userId);
-        if (user) {
-            likedEvent = user.likedEvents.includes(awaitedParams.id);
-        }
-    }
-
-    const event = await getEventById(awaitedParams.id);
-    const relatedEvents = await getRelatedEvents(awaitedParams.id);
-
-    return (
-        <div className="font-medium md:mx-24">
-            <div className="rounded-md md:h-[500px] flex justify-center items-center">
-                <Image
-                    src={event.photo}
-                    alt={event.title}
-                    width={1920}
-                    height={1800}
-                    priority={true}
-                    className="rounded-md w-full h-full object-contain"
-                />
-            </div>
-            <div className="flex flex-col gap-5 mt-5">
-                <h2 className="text-4xl max-sm:text-2xl mt-3">{event.title}</h2>
-
-                <div className="flex max-sm:flex-wrap justify-start items-center gap-3">
-                    <Badge className="text-base">
-                        {event.isFree ? `Free` : `₹ ${event.price}`}
-                    </Badge>
-                    <Badge className="text-base" variant={"secondary"}>
-                        {event.category.name}
-                    </Badge>
-                    <Badge className="text-base" variant={"secondary"}>
-                        {`By ${event.organizer?.firstName} ${event.organizer?.lastName}`}
-                    </Badge>
-                </div>
-
-                <LikeCartButton
-                    event={JSON.parse(JSON.stringify(event))}
-                    user={JSON.parse(JSON.stringify(user))}
-                    likedEvent={likedEvent}
-                    option="eventPage"
-                />
-
-                <div className="flex flex-wrap gap-3">
-                    <div>
-                        {new Date(event.endDate) > new Date(event.startDate)
-                            ? `${dateConverter(event.startDate)} - ${dateConverter(event.endDate)}`
-                            : `${dateConverter(event.startDate)}`}
-                    </div>
-                    &nbsp;
-                    <div>
-                        {timeFormatConverter(event.startTime)} -{" "}
-                        {timeFormatConverter(event.endTime)}
-                    </div>
-                </div>
-
-                <div>
-                    {event.isOnline ? "Online Event" : `${event.location}`}
-                </div>
-
-                <div>{event.description}</div>
-
-                <Link href={event.url} className="text-blue-700 underline hover:text-blue-900">
-                    {event.url}
-                </Link>
-
-                <div className="flex flex-wrap gap-3">
-                    {event.tags?.map((tag: any) => (
-                        <Badge key={tag.name} variant={"secondary"}>
-                            {tag.name}
-                        </Badge>
-                    ))}
-                </div>
-            </div>
-
-            <div className="mt-10">
-                <h2 className="text-4xl max-sm:text-2xl mt-3 text-center text-primary font-bold">
-                    Related Events
-                </h2>
-                <br />
-                {relatedEvents.length > 0 ? (
-                    <EventCards
-                        events={relatedEvents}
-                        currentUserId={userId}
-                        emptyTitle="No Related Events Found"
-                        emptyStateSubtext="Check out other events below"
-                    />
-                ) : (
-                    <NoResults
-                        title={"No Related Events Found"}
-                        desc={""}
-                        link={"/"}
-                        linkTitle={"Explore All Events"}
-                    />
-                )}
-            </div>
-        </div>
-    );
 };
 
 export default Page;
