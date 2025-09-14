@@ -53,8 +53,8 @@ const Card = ({ event, isOrganizer }: CardProps) => {
 
   const formattedDate = isMounted
     ? new Date(event.startDate).toLocaleDateString('en-IN', {
-        month: 'short', day: 'numeric', year: 'numeric'
-      })
+      month: 'short', day: 'numeric', year: 'numeric'
+    })
     : '...';
 
   return (

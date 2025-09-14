@@ -17,7 +17,7 @@ const DeleteEventButton = ({ event }: any) => {
   const handleDeleteEvent = async (eventId: string) => {
     try {
       await deleteEventById(eventId);
-      
+
       toast({
         title: "Event deleted successfully.",
       });

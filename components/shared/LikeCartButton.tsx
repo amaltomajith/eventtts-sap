@@ -84,10 +84,10 @@ const CheckoutDialog = ({ event, user, children }: CheckoutDialogProps) => {
       // ✅ pick correct event (parent for sub-events)
       const targetEvent = currentEvent.parentEvent
         ? await getEventById(
-            typeof currentEvent.parentEvent === "string"
-              ? currentEvent.parentEvent
-              : (currentEvent.parentEvent as any)._id
-          )
+          typeof currentEvent.parentEvent === "string"
+            ? currentEvent.parentEvent
+            : (currentEvent.parentEvent as any)._id
+        )
         : currentEvent;
 
       if (!targetEvent) throw new Error("Event data not available");

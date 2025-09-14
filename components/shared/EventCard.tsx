@@ -94,8 +94,8 @@ const EventCard = async ({ event, currentUserId, page }: Props) => {
             <p className="text-sm">
               {new Date(event.endDate) > new Date(event.startDate)
                 ? `${dateConverter(
-                    event.startDate as unknown as string
-                  )} - ${dateConverter(event.endDate as unknown as string)}`
+                  event.startDate as unknown as string
+                )} - ${dateConverter(event.endDate as unknown as string)}`
                 : `${dateConverter(event.startDate as unknown as string)}`}
             </p>
             &nbsp;
