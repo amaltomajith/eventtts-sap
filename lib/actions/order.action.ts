@@ -7,6 +7,7 @@ import User from "../models/user.model";
 import Event from "../models/event.model";
 import { connectToDatabase } from "../dbconnection";
 import { revalidatePath } from "next/cache";
+import Category from "../models/category.model";
 
 export interface OrderProps {
     totalTickets: number;
@@ -57,6 +58,7 @@ export interface createOrderParams {
     event: string;
 }
 
+
 export async function createOrder(order: createOrderParams) {
     try {
         connectToDatabase();
@@ -92,22 +94,54 @@ export async function createOrder(order: createOrderParams) {
     }
 }
 
-export async function getOrdersByUserId(userId: string) {
+export async function getOrdersByUserId({ userId, page = 1, limit = 3 }: { userId: string, page?: number, limit?: number }) {
     try {
         await connectToDatabase();
 
-        const orders = await Order.find({ user: userId })
+        const conditions = { user: userId };
+        const skipAmount = (page - 1) * limit;
+
+        const orders = await Order.find(conditions)
+            .sort({ createdAt: 'desc' })
+            .skip(skipAmount)
+            .limit(limit)
             .populate({
                 path: "event",
+                model: Event,
                 populate: [
-                    { path: "organizer", model: "User" },
-                    { path: "category", model: "Category" },
+                    { path: "organizer", model: User },
+                    { path: "category", model: Category },
                 ]
             });
+        
+        const ordersCount = await Order.countDocuments(conditions);
 
-        return JSON.parse(JSON.stringify(orders));
+        return { data: JSON.parse(JSON.stringify(orders)), totalPages: Math.ceil(ordersCount / limit) };
     } catch (error) {
         console.log(error);
         throw error;
     }
+}
+// lib/actions/order.action.ts
+
+// ... (keep all your existing code in this file)
+
+export async function getEventStatistics(eventId: string) {
+  try {
+    await connectToDatabase();
+
+    const orders = await Order.find({ event: eventId });
+
+    if (!orders) {
+      return { totalTicketsSold: 0, totalRevenue: 0 };
+    }
+
+    const totalTicketsSold = orders.reduce((total, order) => total + order.totalTickets, 0);
+    const totalRevenue = orders.reduce((total, order) => total + order.totalAmount, 0);
+
+    return { totalTicketsSold, totalRevenue };
+  } catch (error) {
+    console.log(error);
+    throw error;
+  }
 }

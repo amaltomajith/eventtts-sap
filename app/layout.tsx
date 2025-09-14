@@ -25,27 +25,15 @@ export const metadata: Metadata = {
 	publisher: "Yash Yerunkar",
 };
 
-export default function RootLayout({
-	children,
-}: {
-	children: React.ReactNode;
-}) {
-	return (
-			<html lang="en" className={`${inter.className}`}>
-		<ClerkProvider>
-				<body suppressHydrationWarning>
-					<ThemeProvider
-						attribute="class"
-						defaultTheme="system"
-						enableSystem
-						disableTransitionOnChange
-					>
-						{children}
-					</ThemeProvider>
-					<Toaster />
-					<SpeedInsights />
-				</body>
-		</ClerkProvider>
-			</html>
-	);
+export default function RootLayout({ children }: { children: React.ReactNode }) {
+    return (
+        // Add suppressHydrationWarning here
+        <html lang="en" suppressHydrationWarning> 
+            <ClerkProvider>
+                <body>
+                    {children}
+                </body>
+            </ClerkProvider>
+        </html>
+    );
 }

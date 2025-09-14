@@ -1,49 +1,78 @@
-import EventCards from "@/components/shared/EventCards";
-import NoResults from "@/components/shared/NoResults";
-import { Button } from "@/components/ui/button";
-import { getEventsByUserId } from "@/lib/actions/event.action";
-import { getUserByClerkId } from "@/lib/actions/user.action";
-import { auth } from "@clerk/nextjs";
-import Link from "next/link";
-import { redirect } from "next/navigation";
+// app/profile/page.tsx
+
 import React from "react";
+import Link from "next/link";
+import { auth } from "@clerk/nextjs";
+import { redirect } from "next/navigation";
 
-const Page = async () => {
-	const { userId } = auth();
+import { Button } from "@/components/ui/button";
+import Collection from "@/components/shared/Collection";
+import { getEventsByUserId } from "@/lib/actions/event.action";
+import { getOrdersByUserId } from "@/lib/actions/order.action";
+import IOrder from "@/lib/models/order.model";
+import { getUserByClerkId } from "@/lib/actions/user.action";
 
-	if (!userId) {
-		redirect("/sign-in");
-	}
+const ProfilePage = async () => {
+  const { userId: clerkId } = auth();
 
-	const user = await getUserByClerkId(userId);
+  if (!clerkId) {
+    redirect("/sign-in");
+  }
 
-	const events = await getEventsByUserId(user._id);
+  const mongoUser = await getUserByClerkId(clerkId);
 
-	return (
-		<div className="flex flex-col gap-5">
-			<div className="flex max-sm:flex-col justify-between max-sm:items-center">
-				<h1 className="text-4xl max-sm:text-2xl font-bold  text-primary mb-5 pl-10 pt-5">
-					Events Organized by You
-				</h1>
-				{/* <Link href="/create-event">
-					<Button className="w-fit">Create Event</Button>
-				</Link> */}
-			</div>
-			{events.length > 0 ? (
-				<EventCards
-					events={events}
-					page="profile"
-				/>
-			) : (
-				<NoResults
-					title={"You have not created any events yet."}
-					desc={"create your first event now!"}
-					link={"/"}
-					linkTitle={"Explore Events"}
-				/>
-			)}
-		</div>
-	);
+  const organizedEventsPromise = getEventsByUserId({ userId: mongoUser._id });
+  const ordersPromise = getOrdersByUserId({ userId: mongoUser._id });
+
+  const [organizedEvents, orders] = await Promise.all([
+    organizedEventsPromise,
+    ordersPromise,
+  ]);
+
+  const myTickets = orders?.data.map((order: IOrder) => order.event) || [];
+  const myOrganizedEvents = organizedEvents?.data || [];
+
+  return (
+    <>
+      {/* My Tickets Section */}
+      <section className="bg-primary-50 ...">
+        {/* ... */}
+      </section>
+
+      <div className="wrapper my-8">
+        <Collection
+          data={myTickets}
+          emptyTitle="No event tickets purchased yet"
+          emptyStateSubtext="No worries - plenty of exciting events to explore!"
+          collectionType="My_Tickets"
+          limit={3}
+          page={1}
+          totalPages={orders?.totalPages}
+          // ✅ PASS THE ID HERE
+          currentUserId={clerkId} 
+        />
+      </div>
+
+      {/* Events Organized Section */}
+      <section className="bg-primary-50 ...">
+        {/* ... */}
+      </section>
+
+      <div className="wrapper my-8">
+        <Collection
+          data={myOrganizedEvents}
+          emptyTitle="No events have been created yet"
+          emptyStateSubtext="Go create some now!"
+          collectionType="Events_Organized"
+          limit={6}
+          page={1}
+          totalPages={organizedEvents?.totalPages}
+          // ✅ AND PASS THE ID HERE
+          currentUserId={clerkId}
+        />
+      </div>
+    </>
+  );
 };
 
-export default Page;
+export default ProfilePage;

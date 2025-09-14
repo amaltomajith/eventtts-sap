@@ -1,14 +1,14 @@
-import { th } from 'date-fns/locale';
 "use server"
-
+import { revalidatePath } from "next/cache";
+import { FilterQuery } from 'mongoose';
 import { connectToDatabase } from "../dbconnection";
 import Category from "../models/category.model";
-import Event from "../models/event.model";
+import Event, { IEvent } from "../models/event.model";
 import Tag from "../models/tag.model";
-import { revalidatePath } from "next/cache";
 import User from "../models/user.model";
-import { FilterQuery } from 'mongoose';
 import Order from '../models/order.model';
+import { getEventStatistics } from "./order.action";
+
 
 export async function createEvent(eventData: any) {
     try {
@@ -68,8 +68,8 @@ export async function createEvent(eventData: any) {
 export async function getEvents(searchQuery: string, page = 1, pageSize = 12) {
     try {
         await connectToDatabase();
-
-        const query: FilterQuery<typeof Event> = {};
+        
+        const query: FilterQuery<IEvent> = {};
 
         if (searchQuery) {
             query.$or = [
@@ -89,7 +89,7 @@ export async function getEvents(searchQuery: string, page = 1, pageSize = 12) {
             .skip(skip)
             .limit(pageSize);
 
-        const total = await Event.countDocuments();
+        const total = await Event.countDocuments(query);
 
         const totalPages = Math.ceil(total / pageSize);
 
@@ -106,7 +106,7 @@ export async function getEventById(id: string) {
 
         const event = await Event.findById(id)
             .populate("category", "name")
-            .populate("organizer", "firstName lastName email")
+            .populate("organizer", "_id firstName lastName email")
             .populate("tags", "name");
 
         return JSON.parse(JSON.stringify(event));
@@ -150,21 +150,7 @@ export async function getRelatedEvents(id: string) {
     }
 }
 
-export async function getEventsByUserId(userId: string) {
-    try {
-        await connectToDatabase();
 
-        const events = await Event.find({ organizer: userId })
-            .populate("category", "name")
-            .populate("organizer", "firstName lastName email")
-            .populate("tags", "name");
-
-        return JSON.parse(JSON.stringify(events));
-    } catch (error) {
-        console.log(error);
-        throw error;
-    }
-}
 
 export async function deleteEventById(eventId: string) {
     try {
@@ -176,8 +162,6 @@ export async function deleteEventById(eventId: string) {
 
         await User.updateMany({ likedEvents: eventId }, { $pull: { likedEvents: eventId } });
 
-        // add refund logic here
-
         await Order.deleteMany({ event: eventId });
 
         revalidatePath("/");
@@ -186,6 +170,43 @@ export async function deleteEventById(eventId: string) {
         revalidatePath("/likes");
 
         return JSON.parse(JSON.stringify(event));
+    } catch (error) {
+        console.log(error);
+        throw error;
+    }
+}
+export async function getEventsByUserId({ userId, page = 1, limit = 6 }: { userId: string, page?: number, limit?: number }) {
+    try {
+        await connectToDatabase();
+
+        const conditions = { organizer: userId };
+        const skipAmount = (page - 1) * limit;
+
+        const eventsQuery = Event.find(conditions)
+            .sort({ createdAt: 'desc' })
+            .skip(skipAmount)
+            .limit(limit)
+            .populate("category", "name")
+            // ✅ FIX: Make sure to populate the organizer's clerkId
+            .populate("organizer", "_id firstName lastName email clerkId")
+            .populate("tags", "name");
+
+        const events = await eventsQuery;
+        const eventsCount = await Event.countDocuments(conditions);
+
+        return { data: JSON.parse(JSON.stringify(events)), totalPages: Math.ceil(eventsCount / limit) };
+    } catch (error) {
+        console.log(error);
+        throw error;
+    }
+}
+
+// --- ADD THIS NEW FUNCTION AT THE END OF THE FILE ---
+export async function generateSalesReport(eventId: string) {
+    try {
+        // We can reuse the function from your order actions
+        const stats = await getEventStatistics(eventId);
+        return stats;
     } catch (error) {
         console.log(error);
         throw error;

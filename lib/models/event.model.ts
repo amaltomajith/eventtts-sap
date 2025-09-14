@@ -1,35 +1,45 @@
-import { Schema, model, models } from "mongoose";
+import { Document, Schema, model, models } from "mongoose";
 
-const eventSchema = new Schema({
-    title: { type: String, required: true },
-    description: { type: String, required: true },
-    photo: { type: String, required: true },
-    isOnline: { type: Boolean, default: false },
-    location: { type: String },
-    landmark: { type: String, default: "Virtual" },
-    startDate: { type: Date, required: true },
-    endDate: { type: Date, required: true },
-    startTime: { type: String, required: true },
-    endTime: { type: String, required: true },
-    duration: { type: Number },
-    // isMultipleDays: { type: Boolean, required: true, default: false },
-    totalCapacity: { type: Number, default: Math.max() },
-    isFree: { type: Boolean, required: true, default: false },
-    price: { type: Number, default: 0 },
-    category: { type: Schema.Types.ObjectId, ref: 'Category', required: true },
-    tags: [{ type: Schema.Types.ObjectId, ref: 'Tag' }],
-    organizer: { type: Schema.Types.ObjectId, ref: 'User', required: true },
-    attendees: [{ type: Schema.Types.ObjectId, ref: 'User' }],
-    ticketsLeft: { type: Number, default: Math.max() },
-    soldOut: { type: Boolean, default: false },
-    ageRestriction: { type: Number, default: 0 },
-    url: { type: String },
-},
-    {
-        timestamps: true
-    }
-);
+// --- THIS IS THE FIX ---
+// Add the 'export' keyword to the interface definition
+export interface IEvent extends Document {
+  _id: string;
+  title: string;
+  description: string;
+  location?: string;
+  createdAt: Date;
+  photo: string;
+  startDate: Date;
+  endDate: Date;
+  price?: string;
+  isFree: boolean;
+  url?: string;
+  category: { _id: string, name: string }
+  organizer: { _id: string, firstName: string, lastName: string }
+  ticketsLeft: number;
+  totalCapacity: number;
+  tags: { _id: string, name: string }[];
+}
 
-const Event = models.Event || model('Event', eventSchema);
+
+const EventSchema = new Schema({
+  title: { type: String, required: true },
+  description: { type: String, required: true },
+  location: { type: String },
+  createdAt: { type: Date, default: Date.now },
+  photo: { type: String, required: true },
+  startDate: { type: Date, default: Date.now },
+  endDate: { type: Date, default: Date.now },
+  price: { type: String },
+  isFree: { type: Boolean, default: false },
+  url: { type: String },
+  category: { type: Schema.Types.ObjectId, ref: 'Category' },
+  organizer: { type: Schema.Types.ObjectId, ref: 'User' },
+  ticketsLeft: { type: Number, default: 0 },
+  totalCapacity: { type: Number, default: 0 },
+  tags: [{ type: Schema.Types.ObjectId, ref: 'Tag' }],
+})
+
+const Event = models.Event || model('Event', EventSchema);
 
 export default Event;

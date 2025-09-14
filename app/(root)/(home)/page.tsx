@@ -1,3 +1,5 @@
+// app/(root)/(home)/page.tsx
+
 import Categories from "@/components/shared/Categories";
 import EventCards from "@/components/shared/EventCards";
 import NoResults from "@/components/shared/NoResults";
@@ -11,20 +13,29 @@ interface Props {
 }
 
 export default async function Home({ searchParams }: Props) {
+	// ✅ FIX: Await searchParams at the top
+	const awaitedSearchParams = await searchParams;
+
+	const page = Number(awaitedSearchParams.page) || 1;
+	const searchText = awaitedSearchParams.q || "";
+	const category = awaitedSearchParams.category || "";
+
 	let events = [];
 	let totalPages = 0;
 
-	if (searchParams.category) {
-		const category = await getCategoryByName(searchParams.category);
-
-		events = await getEventsByCategory(category._id);
-	} else {
-		const result = await getEvents(
-			searchParams.q ? searchParams.q : "",
-			searchParams.page ? +searchParams.page : 1
-		);
-		events = result.events;
-		totalPages = result.totalPages;
+	try {
+		if (category) {
+			const categoryDoc = await getCategoryByName(category);
+			if (categoryDoc) {
+				events = await getEventsByCategory(categoryDoc._id);
+			}
+		} else {
+			const result = await getEvents(searchText, page);
+			events = result.events;
+			totalPages = result.totalPages;
+		}
+	} catch (error) {
+		console.error("Failed to fetch events:", error);
 	}
 
 	return (
@@ -44,17 +55,16 @@ export default async function Home({ searchParams }: Props) {
 				<EventCards events={events} />
 			) : (
 				<NoResults
-				title={"No events found"}
-				desc={""}
-				link={"/#categories"}
-				linkTitle={"Explore Events"}
+					title={"No events found"}
+					desc={"Try a different search or check back later!"}
+					link={"/"}
+					linkTitle={"Explore All Events"}
 				/>
 			)}
 			<Pagination
-				page={searchParams.page ? +searchParams.page : 1}
+				page={page}
 				totalPages={totalPages}
 			/>
-			
 		</>
 	);
 }
