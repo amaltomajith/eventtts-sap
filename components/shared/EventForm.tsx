@@ -37,6 +37,23 @@ import { useRouter } from "next/navigation";
 import { FileUploader } from "./FileUploader";
 import { useUploadThing } from "@/lib/uploadthing";
 import { th } from "date-fns/locale";
+import SubEventForm from "./SubEventForm";
+import { useFieldArray } from "react-hook-form";
+
+const subEventSchema = z.object({
+	title: z.string().min(2, { message: "Title must be at least 2 characters." }),
+	description: z.string().trim().min(2, { message: "Description must be at least 2 characters." }).optional(),
+	photo: z.string().optional(),
+	startDate: z.date(),
+	endDate: z.date(),
+	startTime: z.string(),
+	endTime: z.string(),
+	isOnline: z.boolean().optional(),
+	location: z.string().trim().optional(),
+	isFree: z.boolean(),
+	price: z.string().trim().optional(),
+	totalCapacity: z.string().trim().optional(),
+});
 
 const formSchema = z.object({
 	title: z.string().trim().min(2, {
@@ -66,6 +83,7 @@ const formSchema = z.object({
 	price: z.string().trim().optional(),
 	ageRestriction: z.string().trim().optional(),
 	url: z.string().trim().optional(),
+	subEvents: z.array(subEventSchema).optional(),
 });
 
 interface Props {
@@ -84,7 +102,7 @@ const EventForm = (props: Props) => {
 
 	const { startUpload } = useUploadThing("imageUploader");
 
-	const form = useForm<z.infer<typeof formSchema>>({
+		const form = useForm<z.infer<typeof formSchema>>({
 		resolver: zodResolver(formSchema),
 		defaultValues: {
 			title: "",
@@ -106,9 +124,15 @@ const EventForm = (props: Props) => {
 			price: undefined,
 			ageRestriction: undefined,
 			url: "",
+			subEvents: [],
 		},
 	});
 
+	const { fields, append, remove } = useFieldArray({
+		name: "subEvents",
+		control: form.control,
+	});
+		
 	async function onSubmit(values: z.infer<typeof formSchema>) {
 		setIsSubmitting(true);
 
@@ -158,6 +182,7 @@ const EventForm = (props: Props) => {
 						: +values.ageRestriction,
 				url: values.url,
 				organizer: props.userId,
+				subEvents: values.subEvents,
 			});
 
 			form.reset();
@@ -780,6 +805,24 @@ const EventForm = (props: Props) => {
 						</FormItem>
 					)}
 				/>
+
+				<div>
+					<h2 className="text-2xl font-bold mb-4">Sub-Events</h2>
+					{fields.map((field, index) => (
+						<div key={field.id} className="border p-4 rounded-lg mb-4">
+							<SubEventForm index={index} />
+							<Button type="button" variant="destructive" onClick={() => remove(index)} className="mt-2">
+								Remove Sub-Event
+							</Button>
+						</div>
+					))}
+					<Button
+						type="button"
+						onClick={() => append({ title: "", description: "", photo: "", startDate: new Date(), endDate: new Date(), startTime: "", endTime: "", isOnline: false, location: "", isFree: false, price: "", totalCapacity: "" })}
+					>
+						Add Sub-Event
+					</Button>
+				</div>
 
 				<div className="flex justify-center items-center">
 					<Button

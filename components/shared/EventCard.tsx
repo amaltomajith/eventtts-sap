@@ -6,7 +6,6 @@ import Link from "next/link";
 import LikeCartButton from "./LikeCartButton";
 import { auth } from "@clerk/nextjs";
 import { getUserByClerkId } from "@/lib/actions/user.action";
-import DeleteEventButton from "./DeleteEventButton";
 
 interface Props {
   event: any;
@@ -27,17 +26,28 @@ const EventCard = async ({ event, page }: Props) => {
 
   return (
     <div className="border h-96 w-96 rounded-md flex flex-col hover:scale-95 transition-all shadow-md relative">
-      <Link href={`/event/${event._id}`} className="w-full h-1/2">
-        <Image
-          src={event.photo}
-          alt={event._id}
-          width={1920}
-          height={1280}
-          className="w-full h-full rounded-md hover:opacity-80 transition-all relative"
-        />
+      <Link href={`/event/${event._id}`} className="w-full h-1/2 relative">
+        {event.photo ? (
+          <Image
+            src={event.photo}
+            alt={event.title || 'Event image'}
+            width={1920}
+            height={1280}
+            className="w-full h-full rounded-t-md object-cover hover:opacity-80 transition-all"
+          />
+        ) : (
+          <div className="w-full h-full bg-gray-200 flex items-center justify-center rounded-t-md">
+            <span className="text-gray-500">No image available</span>
+          </div>
+        )}
+        {event.soldOut && (
+          <div className="absolute top-2 right-2 bg-red-500 text-white text-xs px-2 py-1 rounded-md">
+            Sold Out
+          </div>
+        )}
       </Link>
 
-      <LikeCartButton event={event} user={user} likedEvent={likedEvent} />
+      {!event.parentEvent && <LikeCartButton event={event} user={user} likedEvent={likedEvent} />}
 
       <Link
         href={`/event/${event._id}`}
@@ -47,7 +57,10 @@ const EventCard = async ({ event, page }: Props) => {
           <Badge variant="default">
             {event.isFree ? "Free" : `₹ ${event.price}`}
           </Badge>
-          <Badge variant="secondary">{event.category.name}</Badge>
+                    <Badge variant="secondary">{event.category.name}</Badge>
+          {event.subEvents && event.subEvents.length > 0 && (
+            <Badge variant="outline">Main Event</Badge>
+          )}
           <Badge variant="secondary">
             {event.landmark ? event.landmark : "Online"}
           </Badge>
@@ -73,12 +86,18 @@ const EventCard = async ({ event, page }: Props) => {
           </p>
         </div>
       </Link>
-      <div className="flex justify-between">
+      <div className="flex justify-between items-center p-2 border-t">
         <Badge
           variant={"secondary"}
-          className="m-1 w-fit"
-        >{`${event.organizer.firstName} ${event.organizer.lastName}`}</Badge>
-        {page === "profile" && <DeleteEventButton event={event} />}
+          className="w-fit"
+        >
+          {event.organizer ? `${event.organizer.firstName} ${event.organizer.lastName}` : 'Organizer'}
+        </Badge>
+        {event.ticketsLeft !== undefined && event.ticketsLeft > 0 && (
+          <span className="text-xs text-gray-500">
+            {event.ticketsLeft} {event.ticketsLeft === 1 ? 'ticket' : 'tickets'} left
+          </span>
+        )}
       </div>
     </div>
   );

@@ -1,14 +1,59 @@
-import { th } from 'date-fns/locale';
 "use server"
 
 import { connectToDatabase } from "../dbconnection";
 import Category from "../models/category.model";
-import Event from "../models/event.model";
+import Event, { IEvent } from "../models/event.model";
 import Tag from "../models/tag.model";
-import { revalidatePath } from "next/cache";
 import User from "../models/user.model";
-import { FilterQuery } from 'mongoose';
 import Order from '../models/order.model';
+import { FilterQuery, Types, Document } from 'mongoose';
+import { revalidatePath } from "next/cache";
+
+// Type for event query
+type EventQuery = FilterQuery<IEvent> & {
+    parentEvent?: { $exists: boolean } | Types.ObjectId | string;
+};
+
+// Type for event query parameters
+type GetEventsParams = {
+    query?: string;
+    category?: string;
+    page?: number;
+    limit?: number;
+};
+
+// Alias for backward compatibility
+type EventSearchQuery = EventQuery;
+
+// Type for event update data
+type EventUpdateData = Partial<{
+    title: string;
+    description: string;
+    photo: string;
+    isOnline: boolean;
+    location: string;
+    landmark: string;
+    startDate: Date;
+    endDate: Date;
+    startTime: string;
+    endTime: string;
+    duration: number;
+    totalCapacity: number;
+    isFree: boolean;
+    price: number;
+    category: Types.ObjectId;
+    tags: Types.ObjectId[];
+    ticketsLeft: number;
+    soldOut: boolean;
+    url: string;
+    parentEvent: Types.ObjectId | null;
+}>;
+
+// Type for the event with populated sub-events
+export type EventWithSubEvents = Omit<IEvent, keyof Document | 'subEvents'> & {
+    _id: Types.ObjectId;
+    subEvents?: IEvent[];
+};
 
 export async function createEvent(eventData: any) {
     try {
@@ -17,6 +62,8 @@ export async function createEvent(eventData: any) {
         let data = eventData;
 
         data.ticketsLeft = data.totalCapacity;
+        data.eventType = 'main'; // Mark as main event
+        data.status = 'published'; // Default status
 
         const category = await Category.findOne({ name: data.category });
 
@@ -42,7 +89,36 @@ export async function createEvent(eventData: any) {
 
         data.tags = tagsId;
 
-        const event = await Event.create(data);
+        const { subEvents, ...mainEventData } = data;
+
+        const mainEvent = await Event.create(mainEventData);
+
+        if (subEvents && subEvents.length > 0) {
+            const subEventIds = [];
+
+            for (const subEventData of subEvents) {
+                const newSubEvent = {
+                    ...subEventData,
+                    parentEvent: mainEvent._id,
+                    organizer: mainEvent.organizer,
+                    category: mainEvent.category,
+                    photo: subEventData.photo || mainEvent.photo,
+                    // Subevents should not have their own ticket pool - they share parent's tickets
+                    totalCapacity: 0, // No individual capacity for subevents
+                    ticketsLeft: 0,   // No individual tickets for subevents
+                    soldOut: false,   // Sold out status comes from parent
+                    eventType: 'sub', // Mark as sub-event
+                    status: 'published', // Default status
+                };
+                const subEvent = await Event.create(newSubEvent);
+                subEventIds.push(subEvent._id);
+            }
+
+            mainEvent.subEvents = subEventIds;
+            await mainEvent.save();
+        }
+
+        const event = mainEvent;
 
         event.tags.forEach(async (tag: any) => {
             const tagExists = await Tag.findById(tag);
@@ -65,53 +141,141 @@ export async function createEvent(eventData: any) {
     }
 }
 
-export async function getEvents(searchQuery: string, page = 1, pageSize = 12) {
+export async function getEvents({ query = '', category = '', page = 1, limit = 6 }: GetEventsParams) {
     try {
         await connectToDatabase();
 
-        const query: FilterQuery<typeof Event> = {};
+        const skipAmount = (Number(page) - 1) * limit;
 
-        if (searchQuery) {
-            query.$or = [
-                { title: { $regex: new RegExp(searchQuery, "i") } },
-                { description: { $regex: new RegExp(searchQuery, "i") } }
-            ];
+        const searchQuery: EventQuery = {} as EventQuery;
+
+        if (query) {
+            searchQuery.$or = [
+                { title: { $regex: query, $options: 'i' } },
+                { description: { $regex: query, $options: 'i' } },
+                { location: { $regex: query, $options: 'i' } },
+                { landmark: { $regex: query, $options: 'i' } },
+            ].filter(Boolean) as FilterQuery<IEvent>['$or'];
         }
 
-        await User.find();
+        if (category) {
+            const categoryDoc = await Category.findOne({ name: category });
+            if (categoryDoc) {
+                searchQuery.category = categoryDoc._id;
+            }
+        }
 
-        const skip = (page - 1) * pageSize;
+        // Only get main events (not sub-events) for the listing
+        searchQuery.parentEvent = { $exists: false };
 
-        const events = await Event.find(query)
+        const events = await Event.find(searchQuery)
             .populate("category", "name")
             .populate("organizer", "firstName lastName email")
             .populate("tags", "name")
-            .skip(skip)
-            .limit(pageSize);
+            .sort({ createdAt: -1 })
+            .skip(skipAmount)
+            .limit(limit)
+            .lean<IEvent[]>();
 
-        const total = await Event.countDocuments();
-
-        const totalPages = Math.ceil(total / pageSize);
+        const total = await Event.countDocuments(searchQuery);
+        const totalPages = Math.ceil(total / limit);
 
         return { events: JSON.parse(JSON.stringify(events)), totalPages };
     } catch (error) {
-        console.log(error);
+        console.error('Error in getEvents:', error);
         throw error;
     }
 }
 
-export async function getEventById(id: string) {
+export async function getEventById(id: string): Promise<EventWithSubEvents | null> {
     try {
         await connectToDatabase();
 
+        // First, find the event by ID
         const event = await Event.findById(id)
-            .populate("category", "name")
-            .populate("organizer", "firstName lastName email")
-            .populate("tags", "name");
+            .populate('organizer', 'username photo')
+            .populate('category', 'name')
+            .populate('tags', 'name')
+            .lean();
 
-        return JSON.parse(JSON.stringify(event));
+        if (!event) {
+            return null;
+        }
+
+        // If this is a sub-event, ensure it has all necessary fields from the parent
+        if (event.parentEvent) {
+            const parentEventId = typeof event.parentEvent === 'string' 
+                ? event.parentEvent 
+                : (event.parentEvent as any)._id;
+                
+            const parentEvent = await Event.findById(parentEventId)
+                .select('photo isFree price totalCapacity ticketsLeft soldOut')
+                .lean();
+            
+            if (parentEvent) {
+                // Always inherit photo from parent for sub-events to ensure consistency
+                if (parentEvent.photo) {
+                    event.photo = parentEvent.photo;
+                }
+                
+                // For sub-events, always use parent's ticket pool
+                // Only mark as sold out if parent is sold out or tickets are actually 0
+                if (parentEvent.ticketsLeft !== undefined && parentEvent.ticketsLeft !== null) {
+                    event.ticketsLeft = parentEvent.ticketsLeft;
+                    event.soldOut = parentEvent.soldOut || parentEvent.ticketsLeft <= 0;
+                } else {
+                    event.ticketsLeft = event.ticketsLeft ?? 0;
+                    event.soldOut = event.soldOut || event.ticketsLeft <= 0;
+                }
+                
+                // Inherit price information
+                if (parentEvent.price !== undefined) {
+                    event.price = parentEvent.price;
+                    event.isFree = parentEvent.isFree;
+                }
+            }
+        }
+
+        // If this is a main event with sub-events, fetch and process them
+        if (!event.parentEvent) {
+            const subEvents = await Event.find({ parentEvent: event._id })
+                .populate('organizer', 'username photo')
+                .populate('category', 'name')
+                .populate('tags', 'name')
+                .lean<IEvent[]>();
+
+            // Process each sub-event to ensure they have all necessary fields
+            const processedSubEvents = await Promise.all(subEvents.map(async (subEvent: any) => {
+                // Always inherit photo from parent for consistency
+                if (event.photo) {
+                    subEvent.photo = event.photo;
+                }
+                
+                // Use parent's ticket pool for sub-events
+                if (event.ticketsLeft !== undefined && event.ticketsLeft !== null) {
+                    subEvent.ticketsLeft = event.ticketsLeft;
+                    subEvent.soldOut = event.soldOut || event.ticketsLeft <= 0;
+                } else {
+                    subEvent.ticketsLeft = subEvent.ticketsLeft ?? 0;
+                    subEvent.soldOut = subEvent.soldOut || subEvent.ticketsLeft <= 0;
+                }
+                
+                // Always inherit price information from parent
+                if (event.price !== undefined) {
+                    subEvent.price = event.price;
+                    subEvent.isFree = event.isFree;
+                }
+                
+                return subEvent;
+            }));
+
+            // Add processed sub-events to the main event
+            (event as EventWithSubEvents).subEvents = processedSubEvents;
+        }
+
+        return event as EventWithSubEvents;
     } catch (error) {
-        console.log(error);
+        console.error('Error getting event by ID:', error);
         throw error;
     }
 }
@@ -132,20 +296,32 @@ export async function getEventsByCategory(category: string) {
     }
 }
 
-export async function getRelatedEvents(id: string) {
+export async function getRelatedEvents(eventId: string): Promise<IEvent[]> {
     try {
         await connectToDatabase();
 
-        const event = await Event.findById(id);
+        const event = await Event.findById(eventId);
 
-        const events = await Event.find({ _id: { $nin: event._id }, category: event.category, tags: { $in: event.tags } })
+        if (!event) {
+            throw new Error("Event not found");
+        }
+
+        const relatedEvents = await Event.find({
+            $and: [
+                { _id: { $ne: eventId } },
+                { category: event.category },
+                { parentEvent: { $exists: false } },
+            ],
+        } as FilterQuery<IEvent>)
             .populate("category", "name")
             .populate("organizer", "firstName lastName email")
-            .populate("tags", "name");
+            .populate("tags", "name")
+            .limit(3)
+            .lean<IEvent[]>();
 
-        return JSON.parse(JSON.stringify(events));
+        return JSON.parse(JSON.stringify(relatedEvents));
     } catch (error) {
-        console.log(error);
+        console.error('Error in getRelatedEvents:', error);
         throw error;
     }
 }

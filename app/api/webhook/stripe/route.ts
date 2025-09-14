@@ -28,7 +28,10 @@ export async function POST(request: Request) {
             totalTickets: Number(metadata?.totalTickets) || 0,
             totalAmount: amount_total ? (amount_total / 100) : 0,
             user: metadata?.userId || '',
-            event: metadata?.eventId || '',
+            event: metadata?.subEventId ? {
+                _id: metadata.eventId,
+                subEventId: metadata.subEventId
+            } : metadata?.eventId || '',
         }
 
         const newOrder = await createOrder(order)

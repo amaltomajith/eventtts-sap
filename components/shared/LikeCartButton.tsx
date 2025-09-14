@@ -5,9 +5,43 @@ import { FaHeart, FaRegHeart } from "react-icons/fa";
 import { MdOutlineDoNotDisturbOn, MdOutlineShoppingCart } from "react-icons/md";
 import { useToast } from "../ui/use-toast";
 import { likeEvent } from "@/lib/actions/user.action";
+import { getEventById } from "@/lib/actions/event.action";
 import { Button } from "../ui/button";
 import { loadStripe } from "@stripe/stripe-js";
 import { checkoutOrder } from "@/lib/actions/order.action";
+import { IEvent } from "@/lib/models/event.model";
+import type { Types } from 'mongoose';
+
+// Define a type for the event with all required properties
+type EventWithSubEvents = IEvent & {
+  subEvents?: IEvent[];
+  parentEvent?: string | IEvent | Types.ObjectId | null;
+  _id: string | Types.ObjectId;
+  startDate: Date | string;
+  endDate?: Date | string;
+  photo: string;
+  title: string;
+  ticketsLeft: number;
+  totalCapacity?: number;
+  soldOut: boolean;
+  isFree: boolean;
+  price: number;
+  organizer?: {
+    _id: string | Types.ObjectId;
+    firstName?: string;
+    lastName?: string;
+    username?: string;
+    photo?: string;
+  };
+  category?: {
+    _id: string | Types.ObjectId;
+    name: string;
+  };
+  tags?: Array<{
+    _id: string | Types.ObjectId;
+    name: string;
+  }>;
+};
 import {
   Dialog,
   DialogContent,
@@ -19,24 +53,37 @@ import {
 import { Input } from "../ui/input";
 
 loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!);
-interface Props {
-  event: any;
-  user: any;
+
+type LikeCartButtonProps = {
+  event: EventWithSubEvents;
+  user: {
+    _id: string | Types.ObjectId;
+    likedEvents: Array<string | Types.ObjectId>;
+    [key: string]: any;
+  } | null;
   likedEvent: boolean;
   option?: string;
 }
 
-const LikeCartButton = ({ event, user, likedEvent, option }: Props) => {
+const LikeCartButton = ({ event, user, likedEvent, option }: LikeCartButtonProps) => {
   const { toast } = useToast();
 
-  const disableCart =
-    new Date(event.startDate) < new Date() || event.soldOut || event.ticketsLeft
-      ? event.ticketsLeft <= 0
-      : false;
+  const isPastEvent = new Date(event.startDate) < new Date();
+  
+  // Calculate ticket availability - handle both main events and sub-events
+  const availableTickets = event.ticketsLeft !== undefined ? event.ticketsLeft : 
+                         (event.totalCapacity > 0 ? event.totalCapacity : 1);
+  
+  // Only mark as sold out if explicitly set or no tickets left
+  const isSoldOut = event.soldOut || availableTickets <= 0;
+  
+  // Disable cart if past event or sold out
+  const disableCart = isPastEvent || isSoldOut;
 
   const [totalTickets, setTotalTickets] = useState(1);
-
-  const maxTickets = event.ticketsLeft;
+  
+  // Calculate max tickets that can be booked
+  const maxTickets = Math.max(1, availableTickets || 1);
 
   useEffect(() => {
     const query = new URLSearchParams(window.location.search);
@@ -56,19 +103,96 @@ const LikeCartButton = ({ event, user, likedEvent, option }: Props) => {
       if (!user) {
         toast({
           variant: "destructive",
-          title: "You must be logged in to book event.",
+          title: "You must be logged in to register for an event.",
         });
         return;
       }
 
+      // Get the latest event data to ensure we have current ticket availability
+      const currentEvent = await getEventById(event._id);
+      
+      if (!currentEvent) {
+        throw new Error('Event not found');
+      }
+
+      // For sub-events, we'll use the parent event's ticket pool
+      let parentEventId: string | null = null;
+      let parentEvent = null;
+      
+      if (currentEvent.parentEvent) {
+        if (typeof currentEvent.parentEvent === 'string') {
+          parentEventId = currentEvent.parentEvent;
+        } else if (currentEvent.parentEvent && 
+                 typeof currentEvent.parentEvent === 'object' && 
+                 '_id' in currentEvent.parentEvent) {
+          const parentId = currentEvent.parentEvent._id;
+          parentEventId = typeof parentId === 'string' ? parentId : parentId.toString();
+        }
+        
+        // If we have a parent event ID, fetch the parent event
+        if (parentEventId) {
+          parentEvent = await getEventById(parentEventId);
+        }
+      }
+      
+      // Determine which event to use for ticket management
+      const targetEvent = parentEvent || currentEvent;
+      
+      if (!targetEvent) {
+        throw new Error('Event data not available');
+      }
+
+      // Ensure we have valid IDs as strings
+      const targetEventId = targetEvent._id?.toString() || '';
+      const currentEventId = currentEvent._id?.toString() || '';
+      const isSubEvent = !!parentEvent;
+
+      // Check ticket availability from the target event (parent for sub-events)
+      const availableTickets = typeof targetEvent.ticketsLeft === 'number' 
+        ? targetEvent.ticketsLeft 
+        : (targetEvent.totalCapacity || 0);
+      
+      if (availableTickets <= 0) {
+        throw new Error('No tickets available');
+      }
+
+      // For free events, set totalAmount to 0
+      const amount = targetEvent.isFree ? 0 : ((targetEvent.price || 0) * totalTickets);
+      
+      // Prepare event data for the order with proper typing
+      const orderEvent: any = {
+        _id: targetEventId,
+        title: currentEvent.title || 'Event',
+        isFree: targetEvent.isFree || false,
+        price: targetEvent.price || 0,
+        startDate: currentEvent.startDate,
+        endDate: currentEvent.endDate,
+        photo: currentEvent.photo || targetEvent.photo || '',
+        totalCapacity: targetEvent.totalCapacity || 0,
+        ticketsLeft: availableTickets,
+      };
+      
+      // Add subEventId if this is a sub-event (subEventId should be the sub-event ID, not parent)
+      if (isSubEvent) {
+        orderEvent.subEventId = currentEventId;
+        orderEvent.subEventTitle = currentEvent.title;
+      }
+      
+      // Ensure user ID is properly formatted
+      const userId = typeof user._id === 'string' ? user._id : user._id.toString();
+      
       const order = {
-        totalTickets: totalTickets,
-        totalAmount: event.price,
-        user: user,
-        event: event,
+        totalTickets: Math.min(totalTickets, availableTickets),
+        totalAmount: amount,
+        user: userId,
+        event: orderEvent,
       };
 
-      await checkoutOrder(order);
+      const { url } = await checkoutOrder(order);
+      
+      if (url) {
+        window.location.href = url;
+      }
     } catch (error: any) {
       toast({
         variant: "destructive",
@@ -88,11 +212,17 @@ const LikeCartButton = ({ event, user, likedEvent, option }: Props) => {
         return;
       }
 
-      likedEvent = await user.likedEvents.includes(event._id);
+      const eventId = typeof event._id === 'string' ? event._id : event._id.toString();
+      const userId = typeof user._id === 'string' ? user._id : user._id.toString();
+      
+      const isLiked = user.likedEvents.some((id: string | Types.ObjectId) => {
+        const idStr = typeof id === 'string' ? id : id.toString();
+        return idStr === eventId;
+      });
 
-      await likeEvent(event._id, user._id);
+      await likeEvent(eventId, userId);
 
-      if (likedEvent) {
+      if (isLiked) {
         toast({
           title: "Event removed from Liked Events.",
         });
@@ -157,7 +287,10 @@ const LikeCartButton = ({ event, user, likedEvent, option }: Props) => {
                           min={1}
                           max={maxTickets}
                           value={totalTickets}
-                          onChange={(e) => setTotalTickets(+e.target.value)}
+                          onChange={(e) => {
+                            const value = Math.min(Math.max(1, +e.target.value), maxTickets);
+                            setTotalTickets(value);
+                          }}
                         />
                         <Button onClick={() => handleCheckout()}>Book</Button>
                       </div>
