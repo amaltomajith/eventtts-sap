@@ -6,12 +6,13 @@ import { getEventById } from "@/lib/actions/event.action";
 import { getUserByClerkId } from "@/lib/actions/user.action";
 
 interface UpdateEventPageProps {
-  params: {
+  params: Promise<{
     id: string;
-  };
+  }>;
 }
 
-const UpdateEventPage = async ({ params: { id } }: UpdateEventPageProps) => {
+const UpdateEventPage = async ({ params }: UpdateEventPageProps) => {
+  const { id } = await params;
   const { userId } = auth();
 
   if (!userId) {
