@@ -5,8 +5,11 @@ import { FaHeart, FaRegHeart } from "react-icons/fa";
 import { MdOutlineDoNotDisturbOn, MdOutlineShoppingCart } from "react-icons/md";
 import { useToast } from "../ui/use-toast";
 import { likeEvent } from "@/lib/actions/user.action";
+import { getEventById } from "@/lib/actions/event.action";
 import { Button } from "../ui/button";
 import { checkoutOrder } from "@/lib/actions/order.action";
+import { IEvent } from "@/lib/models/event.model";
+import type { Types } from "mongoose";
 import {
   Dialog,
   DialogContent,
@@ -17,25 +20,52 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "../ui/input";
 
-// Note: Stripe's loadStripe promise should not be called at the top level of a module.
-// It's better to call it inside the component or when it's needed, but for now we'll leave it.
-// import { loadStripe } from "@stripe/stripe-js";
-// loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!);
+// -------------------------------------------------------------
+// Event Type with SubEvent Support
+// -------------------------------------------------------------
+type EventWithSubEvents = IEvent & {
+  subEvents?: IEvent[];
+  parentEvent?: string | IEvent | Types.ObjectId | null;
+  _id: string | Types.ObjectId;
+  startDate: Date | string;
+  endDate?: Date | string;
+  photo: string;
+  title: string;
+  ticketsLeft: number;
+  totalCapacity?: number;
+  soldOut: boolean;
+  isFree: boolean;
+  price: number;
+  organizer?: {
+    _id: string | Types.ObjectId;
+    firstName?: string;
+    lastName?: string;
+    username?: string;
+    photo?: string;
+  };
+  category?: {
+    _id: string | Types.ObjectId;
+    name: string;
+  };
+  tags?: Array<{
+    _id: string | Types.ObjectId;
+    name: string;
+  }>;
+};
 
-// ====================================================================================
-// 1. Checkout Dialog Component (Extracted Logic)
-// ====================================================================================
-
+// -------------------------------------------------------------
+// Checkout Dialog Component
+// -------------------------------------------------------------
 type CheckoutDialogProps = {
-  event: any;
+  event: EventWithSubEvents;
   user: any;
-  children: React.ReactNode; // The trigger button/icon will be passed as children
+  children: React.ReactNode;
 };
 
 const CheckoutDialog = ({ event, user, children }: CheckoutDialogProps) => {
   const { toast } = useToast();
   const [totalTickets, setTotalTickets] = useState(1);
-  const maxTickets = event.ticketsLeft;
+  const maxTickets = event.ticketsLeft ?? 1;
 
   const handleCheckout = async () => {
     if (!user) {
@@ -46,16 +76,56 @@ const CheckoutDialog = ({ event, user, children }: CheckoutDialogProps) => {
       return;
     }
 
-    const order = {
-      totalTickets: totalTickets,
-      // ✅ LOGIC FIX: Correctly calculate the total amount
-      totalAmount: event.price * totalTickets,
-      user: user,
-      event: event,
-    };
-
     try {
-      await checkoutOrder(order);
+      // ✅ fetch latest event to avoid overselling
+      const currentEvent = await getEventById(event._id);
+      if (!currentEvent) throw new Error("Event not found");
+
+      // ✅ pick correct event (parent for sub-events)
+      const targetEvent = currentEvent.parentEvent
+        ? await getEventById(
+            typeof currentEvent.parentEvent === "string"
+              ? currentEvent.parentEvent
+              : (currentEvent.parentEvent as any)._id
+          )
+        : currentEvent;
+
+      if (!targetEvent) throw new Error("Event data not available");
+
+      const availableTickets =
+        typeof targetEvent.ticketsLeft === "number"
+          ? targetEvent.ticketsLeft
+          : targetEvent.totalCapacity || 0;
+
+      if (availableTickets <= 0) throw new Error("No tickets available");
+
+      const amount = targetEvent.isFree
+        ? 0
+        : (targetEvent.price || 0) * totalTickets;
+
+      const order = {
+        totalTickets: Math.min(totalTickets, availableTickets),
+        totalAmount: amount,
+        user: typeof user._id === "string" ? user._id : user._id.toString(),
+        event: {
+          _id: targetEvent._id?.toString(),
+          title: currentEvent.title,
+          isFree: targetEvent.isFree || false,
+          price: targetEvent.price || 0,
+          startDate: currentEvent.startDate,
+          endDate: currentEvent.endDate,
+          photo: currentEvent.photo || targetEvent.photo || "",
+          totalCapacity: targetEvent.totalCapacity || 0,
+          ticketsLeft: availableTickets,
+          ...(currentEvent.parentEvent && {
+            subEventId: currentEvent._id?.toString(),
+            subEventTitle: currentEvent.title,
+          }),
+        },
+      };
+
+      const { url } = await checkoutOrder(order);
+      if (url) window.location.href = url;
     } catch (error: any) {
       toast({
         variant: "destructive",
@@ -82,17 +152,20 @@ const CheckoutDialog = ({ event, user, children }: CheckoutDialogProps) => {
                   min={1}
                   max={maxTickets}
                   value={totalTickets}
-                  onChange={(e) => {
-                    const value = Math.max(1, Math.min(maxTickets, Number(e.target.value)));
-                    setTotalTickets(value);
-                  }}
+                  onChange={(e) =>
+                    setTotalTickets(
+                      Math.max(1, Math.min(maxTickets, Number(e.target.value)))
+                    )
+                  }
                   className="w-24 text-center"
                 />
-                 <span className="text-sm text-gray-500">
+                <span className="text-sm text-gray-500">
                   (Max: {maxTickets})
                 </span>
               </div>
-              <Button onClick={handleCheckout} className="w-full">Book Now</Button>
+              <Button onClick={handleCheckout} className="w-full">
+                Book Now
+              </Button>
             </div>
           </DialogDescription>
         </DialogHeader>
@@ -101,12 +174,11 @@ const CheckoutDialog = ({ event, user, children }: CheckoutDialogProps) => {
   );
 };
 
-// ====================================================================================
-// 2. Main LikeCartButton Component (Refactored & Simplified)
-// ====================================================================================
-
+// -------------------------------------------------------------
+// LikeCartButton Component
+// -------------------------------------------------------------
 interface LikeCartButtonProps {
-  event: any;
+  event: EventWithSubEvents;
   user: any;
   likedEvent: boolean;
   option?: string;
@@ -114,23 +186,26 @@ interface LikeCartButtonProps {
 
 const LikeCartButton = ({ event, user, likedEvent, option }: LikeCartButtonProps) => {
   const { toast } = useToast();
-  
-  // ✅ STATE MANAGEMENT FIX: Use state for the liked status so the UI updates
   const [isLiked, setIsLiked] = useState(likedEvent);
 
-  // ✅ READABILITY FIX: Simplified logic for disabling the cart
   const isEventPast = new Date(event.startDate) < new Date();
   const areTicketsAvailable = event.ticketsLeft > 0 && !event.soldOut;
   const isCartDisabled = isEventPast || !areTicketsAvailable;
-  
-  // This useEffect can stay as is, it handles the Stripe redirect messages
+
   useEffect(() => {
     const query = new URLSearchParams(window.location.search);
     if (query.get("success")) {
-      toast({ title: "Order placed successfully!", description: "You will receive an email confirmation." });
+      toast({
+        title: "Order placed successfully!",
+        description: "You will receive an email confirmation.",
+      });
     }
     if (query.get("canceled")) {
-      toast({ title: "Order canceled.", description: "You can continue to shop around and checkout when you’re ready." });
+      toast({
+        title: "Order canceled.",
+        description:
+          "You can continue to shop around and checkout when you’re ready.",
+      });
     }
   }, [toast]);
 
@@ -145,12 +220,12 @@ const LikeCartButton = ({ event, user, likedEvent, option }: LikeCartButtonProps
 
     try {
       await likeEvent(event._id, user._id);
-      
-      // ✅ STATE MANAGEMENT FIX: Toggle the local state to trigger a re-render
       setIsLiked((prev) => !prev);
-      
+
       toast({
-        title: !isLiked ? "Event added to Liked Events." : "Event removed from Liked Events.",
+        title: !isLiked
+          ? "Event added to Liked Events."
+          : "Event removed from Liked Events.",
       });
     } catch (error: any) {
       toast({
@@ -162,7 +237,6 @@ const LikeCartButton = ({ event, user, likedEvent, option }: LikeCartButtonProps
   };
 
   if (option === "eventPage") {
-    // --- Large Button Layout for the main event page ---
     return (
       <div className="flex flex-wrap gap-3">
         <Button
@@ -170,43 +244,60 @@ const LikeCartButton = ({ event, user, likedEvent, option }: LikeCartButtonProps
           variant="secondary"
           className="flex gap-1 rounded-full hover:scale-105 transition-all"
         >
-          {isLiked ? <FaHeart className="h-5 w-5 text-primary" /> : <FaRegHeart className="h-5 w-5 text-primary" />}
+          {isLiked ? (
+            <FaHeart className="h-5 w-5 text-primary" />
+          ) : (
+            <FaRegHeart className="h-5 w-5 text-primary" />
+          )}
           Like
         </Button>
 
         {!isCartDisabled ? (
           <CheckoutDialog event={event} user={user}>
-            <Button variant="secondary" className="flex gap-1 rounded-full hover:scale-105 transition-all">
+            <Button
+              variant="secondary"
+              className="flex gap-1 rounded-full hover:scale-105 transition-all"
+            >
               <MdOutlineShoppingCart className="h-5 w-5 text-primary" />
               Book Now
             </Button>
           </CheckoutDialog>
         ) : (
-          <Button variant="destructive" disabled className="flex gap-1 rounded-full">
+          <Button
+            variant="destructive"
+            disabled
+            className="flex gap-1 rounded-full"
+          >
             <MdOutlineDoNotDisturbOn className="h-5 w-5" />
             Sold Out
           </Button>
         )}
       </div>
     );
-  } else {
-    // --- Small Icon Layout for event cards ---
-    return (
-      <div className="absolute top-2 right-2 flex flex-col items-center gap-2">
-        <div className="border bg-white/80 backdrop-blur-sm rounded-full p-1 h-8 w-8 flex justify-center items-center hover:scale-110 transition-transform cursor-pointer" onClick={handleLike}>
-          {isLiked ? <FaHeart className="text-primary" /> : <FaRegHeart className="text-primary" />}
-        </div>
+  }
 
-        {!isCartDisabled && (
-          <CheckoutDialog event={event} user={user}>
-            <div className="border bg-white/80 backdrop-blur-sm rounded-full p-1 h-8 w-8 flex justify-center items-center hover:scale-110 transition-transform cursor-pointer">
-              <MdOutlineShoppingCart className="text-primary" />
-            </div>
-          </CheckoutDialog>
+  return (
+    <div className="absolute top-2 right-2 flex flex-col items-center gap-2">
+      <div
+        className="border bg-white/80 backdrop-blur-sm rounded-full p-1 h-8 w-8 flex justify-center items-center hover:scale-110 transition-transform cursor-pointer"
+        onClick={handleLike}
+      >
+        {isLiked ? (
+          <FaHeart className="text-primary" />
+        ) : (
+          <FaRegHeart className="text-primary" />
         )}
       </div>
-    );
-  }
+
+      {!isCartDisabled && (
+        <CheckoutDialog event={event} user={user}>
+          <div className="border bg-white/80 backdrop-blur-sm rounded-full p-1 h-8 w-8 flex justify-center items-center hover:scale-110 transition-transform cursor-pointer">
+            <MdOutlineShoppingCart className="text-primary" />
+          </div>
+        </CheckoutDialog>
+      )}
+    </div>
+  );
 };
 
 export default LikeCartButton;

@@ -1,48 +1,71 @@
-import { Schema, model, models, Document } from "mongoose";
+import { Schema, model, models, Document, Types } from "mongoose";
 
 export interface IEvent extends Document {
-  _id: string;
   title: string;
-  description?: string;
+  description: string;
+  photo: string;           // Event cover image
+  imageUrl?: string;       // Optional alias for photo (compatibility)
+  isOnline: boolean;
   location?: string;
-  createdAt: Date;
-  imageUrl: string;
+  landmark?: string;
   startDate: Date;
   endDate: Date;
-  price?: number;
-  isFree: boolean;
-  url?: string;
-  category: { _id: string; name: string };
-  organizer: { _id: string; firstName: string; lastName: string; clerkId: string; };
-  landmark?: string;
   startTime: string;
   endTime: string;
-  photo: string;
-  // ✅ Add tags to the interface
-  tags: { _id: string; name: string }[];
+  duration?: number;
+  totalCapacity: number;
+  isFree: boolean;
+  price: number;
+  category: Types.ObjectId;
+  tags: Types.ObjectId[];
+  organizer: Types.ObjectId;
+  attendees: Types.ObjectId[];
+  ticketsLeft: number;
+  soldOut: boolean;
+  ageRestriction?: number;
+  url?: string;
+  parentEvent?: Types.ObjectId;     // For sub-events
+  subEvents: Types.ObjectId[];      // List of sub-events
+  eventType?: "main" | "sub";       // Event type
+  status?: "draft" | "published" | "cancelled";
+  createdAt: Date;
+  updatedAt: Date;
 }
 
-const EventSchema = new Schema({
-  title: { type: String, required: true },
-  description: { type: String },
-  location: { type: String },
-  createdAt: { type: Date, default: Date.now },
-  imageUrl: { type: String, required: true },
-  startDate: { type: Date, required: true },
-  endDate: { type: Date, required: true },
-  price: { type: Number },
-  isFree: { type: Boolean, default: false },
-  url: { type: String },
-  category: { type: Schema.Types.ObjectId, ref: 'Category' },
-  organizer: { type: Schema.Types.ObjectId, ref: 'User' },
-  landmark: { type: String },
-  startTime: { type: String, required: true },
-  endTime: { type: String, required: true },
-  photo: { type: String, required: true },
-  // ✅ Add tags to the schema, referencing the 'Tag' model
-  tags: [{ type: Schema.Types.ObjectId, ref: 'Tag' }],
-});
+const eventSchema = new Schema<IEvent>(
+  {
+    title: { type: String, required: true },
+    description: { type: String, required: true },
+    photo: { type: String, required: true },
+    imageUrl: { type: String }, // ✅ Extra compatibility field
+    isOnline: { type: Boolean, default: false },
+    location: { type: String },
+    landmark: { type: String, default: "Virtual" },
+    startDate: { type: Date, required: true },
+    endDate: { type: Date, required: true },
+    startTime: { type: String, required: true },
+    endTime: { type: String, required: true },
+    duration: { type: Number },
+    totalCapacity: { type: Number, default: 0 },
+    isFree: { type: Boolean, default: false },
+    price: { type: Number, default: 0 },
+    category: { type: Schema.Types.ObjectId, ref: "Category", required: true },
+    tags: [{ type: Schema.Types.ObjectId, ref: "Tag" }],
+    organizer: { type: Schema.Types.ObjectId, ref: "User", required: true },
+    attendees: [{ type: Schema.Types.ObjectId, ref: "User" }],
+    ticketsLeft: { type: Number, default: 0 },
+    soldOut: { type: Boolean, default: false },
+    ageRestriction: { type: Number, default: 0 },
+    url: { type: String },
+    parentEvent: { type: Schema.Types.ObjectId, ref: "Event" },
+    subEvents: [{ type: Schema.Types.ObjectId, ref: "Event" }],
+    eventType: { type: String, enum: ["main", "sub"], default: "main" },
+    status: { type: String, enum: ["draft", "published", "cancelled"], default: "published" },
+  },
+  { timestamps: true }
+);
 
-const Event = models.Event || model('Event', EventSchema);
+const Event = models.Event || model<IEvent>("Event", eventSchema);
 
 export default Event;
+export type EventDocument = IEvent & Document;
