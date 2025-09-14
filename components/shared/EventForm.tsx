@@ -28,8 +28,8 @@ import { Textarea } from "../ui/textarea";
 import { useToast } from "../ui/use-toast";
 import { useRouter } from "next/navigation";
 import { FileUploader } from "./FileUploader";
-import { useUploadThing } from "@/lib/uploadthing";
 import SubEventForm from "./SubEventForm";
+import { useUploadThing } from "@/lib/uploadthing";
 
 // ---------------- SUB EVENT SCHEMA ----------------
 const subEventSchema = z.object({
@@ -271,10 +271,392 @@ const EventForm = ({ userId, type = "create", event, eventId }: Props) => {
 	// ---------------- FORM JSX ----------------
 	return (
 		<Form {...form}>
-			<div>
-				{/* TODO: Add form content back */}
-				<p>Form content needs to be restored</p>
-			</div>
+			<form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col gap-5">
+				{/* Title Field */}
+				<FormField
+					control={form.control}
+					name="title"
+					render={({ field }) => (
+						<FormItem className="w-full">
+							<FormControl>
+								<Input placeholder="Event title" {...field} className="input-field" />
+							</FormControl>
+							<FormMessage />
+						</FormItem>
+					)}
+				/>
+
+				{/* Category Field */}
+				<FormField
+					control={form.control}
+					name="category"
+					render={({ field }) => (
+						<FormItem className="w-full">
+							<FormControl>
+								<select {...field} className="input-field">
+									<option value="">Select Category</option>
+									{categories.map((category, index) => (
+										<option key={index} value={category.title.toLowerCase()}>
+											{category.title}
+										</option>
+									))}
+								</select>
+							</FormControl>
+							<FormMessage />
+						</FormItem>
+					)}
+				/>
+
+				{/* Tags Field */}
+				<FormField
+					control={form.control}
+					name="tags"
+					render={({ field }) => (
+						<FormItem className="w-full">
+							<FormControl>
+								<div>
+									<Input
+										placeholder="Add tags (press Enter or comma to add)"
+										onKeyDown={(e) => handleKeyDown(e, field)}
+										className="input-field"
+									/>
+									<div className="flex flex-wrap gap-2 mt-2">
+										{field.value?.map((tag: string, index: number) => (
+											<Badge key={index} variant="secondary" className="cursor-pointer">
+												{tag}
+												<button
+													type="button"
+													onClick={() => removeTagHandler(tag, field)}
+													className="ml-1 text-red-500"
+												>
+													×
+												</button>
+											</Badge>
+										))}
+									</div>
+								</div>
+							</FormControl>
+							<FormMessage />
+						</FormItem>
+					)}
+				/>
+
+				{/* Description Field */}
+				<FormField
+					control={form.control}
+					name="description"
+					render={({ field }) => (
+						<FormItem className="w-full">
+							<FormControl>
+								<Textarea placeholder="Event description" {...field} className="textarea rounded-2xl" />
+							</FormControl>
+							<FormMessage />
+						</FormItem>
+					)}
+				/>
+
+				{/* Photo Upload */}
+				<FormField
+					control={form.control}
+					name="photo"
+					render={({ field }) => (
+						<FormItem className="w-full">
+							<FormControl>
+								<FileUploader
+									onFieldChange={field.onChange}
+									imageUrl={field.value}
+									setFiles={setFiles}
+								/>
+							</FormControl>
+							<FormMessage />
+						</FormItem>
+					)}
+				/>
+
+				{/* Location Fields */}
+				<div className="flex flex-col gap-5 md:flex-row">
+					<FormField
+						control={form.control}
+						name="location"
+						render={({ field }) => (
+							<FormItem className="w-full">
+								<FormControl>
+									<Input placeholder="Event location or URL" {...field} className="input-field" />
+								</FormControl>
+								<FormMessage />
+							</FormItem>
+						)}
+					/>
+					<FormField
+						control={form.control}
+						name="landmark"
+						render={({ field }) => (
+							<FormItem className="w-full">
+								<FormControl>
+									<Input placeholder="Nearby landmark" {...field} className="input-field" />
+								</FormControl>
+								<FormMessage />
+							</FormItem>
+						)}
+					/>
+				</div>
+
+				{/* Date Fields */}
+				<div className="flex flex-col gap-5 md:flex-row">
+					<FormField
+						control={form.control}
+						name="startDate"
+						render={({ field }) => (
+							<FormItem className="w-full">
+								<FormControl>
+									<Popover>
+										<PopoverTrigger asChild>
+											<Button
+												variant={"outline"}
+												className={cn(
+													"w-full pl-3 text-left font-normal",
+													!field.value && "text-muted-foreground"
+												)}
+											>
+												{field.value ? (
+													format(field.value, "PPP")
+												) : (
+													<span>Pick start date</span>
+												)}
+												<CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+											</Button>
+										</PopoverTrigger>
+										<PopoverContent className="w-auto p-0" align="start">
+											<Calendar
+												mode="single"
+												selected={field.value}
+												onSelect={field.onChange}
+												disabled={(date) =>
+													date < new Date() || date < new Date("1900-01-01")
+												}
+												initialFocus
+											/>
+										</PopoverContent>
+									</Popover>
+								</FormControl>
+								<FormMessage />
+							</FormItem>
+						)}
+					/>
+
+					<FormField
+						control={form.control}
+						name="endDate"
+						render={({ field }) => (
+							<FormItem className="w-full">
+								<FormControl>
+									<Popover>
+										<PopoverTrigger asChild>
+											<Button
+												variant={"outline"}
+												className={cn(
+													"w-full pl-3 text-left font-normal",
+													!field.value && "text-muted-foreground"
+												)}
+											>
+												{field.value ? (
+													format(field.value, "PPP")
+												) : (
+													<span>Pick end date</span>
+												)}
+												<CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+											</Button>
+										</PopoverTrigger>
+										<PopoverContent className="w-auto p-0" align="start">
+											<Calendar
+												mode="single"
+												selected={field.value}
+												onSelect={field.onChange}
+												disabled={(date) =>
+													date < new Date() || date < new Date("1900-01-01")
+												}
+												initialFocus
+											/>
+										</PopoverContent>
+									</Popover>
+								</FormControl>
+								<FormMessage />
+							</FormItem>
+						)}
+					/>
+				</div>
+
+				{/* Time Fields */}
+				<div className="flex flex-col gap-5 md:flex-row">
+					<FormField
+						control={form.control}
+						name="startTime"
+						render={({ field }) => (
+							<FormItem className="w-full">
+								<FormControl>
+									<Input type="time" {...field} className="input-field" />
+								</FormControl>
+								<FormMessage />
+							</FormItem>
+						)}
+					/>
+
+					<FormField
+						control={form.control}
+						name="endTime"
+						render={({ field }) => (
+							<FormItem className="w-full">
+								<FormControl>
+									<Input type="time" {...field} className="input-field" />
+								</FormControl>
+								<FormMessage />
+							</FormItem>
+						)}
+					/>
+				</div>
+
+				{/* Price Fields */}
+				<div className="flex flex-col gap-5 md:flex-row">
+					<FormField
+						control={form.control}
+						name="isFree"
+						render={({ field }) => (
+							<FormItem>
+								<FormControl>
+									<div className="flex items-center">
+										<label
+											htmlFor="isFree"
+											className="whitespace-nowrap pr-3 text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+										>
+											Free Ticket
+										</label>
+										<Checkbox
+											onCheckedChange={field.onChange}
+											checked={field.value}
+											id="isFree"
+											className="mr-2 h-5 w-5 border-2 border-primary-500"
+										/>
+									</div>
+								</FormControl>
+								<FormMessage />
+							</FormItem>
+						)}
+					/>
+
+					<FormField
+						control={form.control}
+						name="price"
+						render={({ field }) => (
+							<FormItem className="w-full">
+								<FormControl>
+									<div className="flex-center h-[54px] w-full overflow-hidden rounded-full bg-grey-50 px-4 py-2">
+										<Image
+											src="/assets/icons/dollar.svg"
+											alt="dollar"
+											width={24}
+											height={24}
+											className="filter-grey"
+										/>
+										<Input
+											type="number"
+											placeholder="Price"
+											{...field}
+											className="p-regular-16 border-0 bg-grey-50 outline-offset-0 focus:border-0 focus-visible:ring-0 focus-visible:ring-offset-0"
+										/>
+									</div>
+								</FormControl>
+								<FormMessage />
+							</FormItem>
+						)}
+					/>
+				</div>
+
+				{/* Capacity Field */}
+				<FormField
+					control={form.control}
+					name="totalCapacity"
+					render={({ field }) => (
+						<FormItem className="w-full">
+							<FormControl>
+								<Input
+									type="number"
+									placeholder="Total capacity (optional)"
+									{...field}
+									className="input-field"
+								/>
+							</FormControl>
+							<FormMessage />
+						</FormItem>
+					)}
+				/>
+
+				{/* URL Field */}
+				<FormField
+					control={form.control}
+					name="url"
+					render={({ field }) => (
+						<FormItem className="w-full">
+							<FormControl>
+								<Input placeholder="Event URL (optional)" {...field} className="input-field" />
+							</FormControl>
+							<FormMessage />
+						</FormItem>
+					)}
+				/>
+
+				{/* Sub Events Section */}
+				<div className="flex flex-col gap-5">
+					<div className="flex items-center justify-between">
+						<h3 className="text-lg font-semibold">Sub Events</h3>
+						<Button
+							type="button"
+							variant="outline"
+							onClick={() => append({
+								title: "",
+								description: "",
+								photo: "",
+								startDate: new Date(),
+								endDate: new Date(),
+								startTime: "",
+								endTime: "",
+								isOnline: false,
+								location: "",
+								isFree: true,
+								price: "",
+								totalCapacity: "",
+							})}
+						>
+							Add Sub Event
+						</Button>
+					</div>
+
+					{fields.map((field, index) => (
+						<div key={field.id} className="border rounded-lg p-4">
+							<div className="flex items-center justify-between mb-4">
+								<h4 className="font-medium">Sub Event {index + 1}</h4>
+								<Button
+									type="button"
+									variant="destructive"
+									size="sm"
+									onClick={() => remove(index)}
+								>
+									Remove
+								</Button>
+							</div>
+							<SubEventForm index={index} />
+						</div>
+					))}
+				</div>
+
+				<Button
+					type="submit"
+					size="lg"
+					disabled={isSubmitting}
+					className="button col-span-2 w-full"
+				>
+					{isSubmitting ? "Submitting..." : `${type === "create" ? "Create Event" : "Update Event"}`}
+				</Button>
+			</form>
 		</Form>
 	);
 };
