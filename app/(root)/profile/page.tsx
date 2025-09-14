@@ -1,49 +1,84 @@
-import EventCards from "@/components/shared/EventCards";
-import NoResults from "@/components/shared/NoResults";
-import { Button } from "@/components/ui/button";
-import { getEventsByUserId } from "@/lib/actions/event.action";
-import { getUserByClerkId } from "@/lib/actions/user.action";
-import { auth } from "@clerk/nextjs";
 import Link from "next/link";
+import { auth } from "@clerk/nextjs";
 import { redirect } from "next/navigation";
-import React from "react";
+import { Button } from "@/components/ui/button";
+import EventCards from "@/components/shared/EventCards";
+import { getEventsByUserId } from "@/lib/actions/event.action";
+import { getOrdersByUserId } from "@/lib/actions/order.action";
+import { IOrder } from "@/types";
+import { getUserByClerkId } from "@/lib/actions/user.action";
 
-const Page = async () => {
-	const { userId } = auth();
+// ✅ This is the definitive fix for the headers/searchParams error
+export const dynamic = 'force-dynamic';
 
-	if (!userId) {
-		redirect("/sign-in");
-	}
+interface ProfilePageProps {
+  searchParams: Promise<{ page?: string }>;
+}
 
-	const user = await getUserByClerkId(userId);
+const ProfilePage = async ({ searchParams }: ProfilePageProps) => {
+  const { userId: clerkId } = auth();
 
-	const events = await getEventsByUserId(user._id);
+  if (!clerkId) {
+    redirect("/sign-in");
+  }
 
-	return (
-		<div className="flex flex-col gap-5">
-			<div className="flex max-sm:flex-col justify-between max-sm:items-center">
-				<h1 className="text-4xl max-sm:text-2xl font-bold  text-primary mb-5 pl-10 pt-5">
-					Events Organized by You
-				</h1>
-				{/* <Link href="/create-event">
-					<Button className="w-fit">Create Event</Button>
-				</Link> */}
-			</div>
-			{events.length > 0 ? (
-				<EventCards
-					events={events}
-					page="profile"
-				/>
-			) : (
-				<NoResults
-					title={"You have not created any events yet."}
-					desc={"create your first event now!"}
-					link={"/"}
-					linkTitle={"Explore Events"}
-				/>
-			)}
-		</div>
-	);
+  const mongoUser = await getUserByClerkId(clerkId);
+  // Await searchParams in Next.js 15+
+  const params = await searchParams;
+  const organizedEventsPage = Number(params.page) || 1;
+
+  const organizedEventsPromise = getEventsByUserId({ userId: mongoUser._id, page: organizedEventsPage });
+  const ordersPromise = getOrdersByUserId({ userId: mongoUser._id });
+
+  const [organizedEvents, orders] = await Promise.all([
+    organizedEventsPromise,
+    ordersPromise,
+  ]);
+
+  const myTickets = orders?.data.map((order: IOrder) => order.event) || [];
+  const myOrganizedEvents = organizedEvents?.data || [];
+
+  return (
+    <>
+      {/* My Tickets Section */}
+      <section className="bg-primary-50 bg-dotted-pattern bg-cover bg-center py-5 md:py-10">
+        <div className="wrapper flex items-center justify-center sm:justify-between">
+          <h3 className="h3-bold text-center sm:text-left">My Tickets</h3>
+          <Button asChild size="lg" className="button hidden sm:flex">
+            <Link href="/#events">Explore More Events</Link>
+          </Button>
+        </div>
+      </section>
+
+      <div className="wrapper my-8">
+        <EventCards
+          events={myTickets}
+          currentUserId={clerkId}
+          emptyTitle="No event tickets purchased yet"
+          emptyStateSubtext="No worries - plenty of exciting events to explore!"
+        />
+      </div>
+
+      {/* Events Organized Section */}
+      <section className="bg-primary-50 bg-dotted-pattern bg-cover bg-center py-5 md:py-10">
+        <div className="wrapper flex items-center justify-center sm:justify-between">
+          <h3 className="h3-bold text-center sm:text-left">Events Organized</h3>
+          <Button asChild size="lg" className="button hidden sm:flex">
+            <Link href="/create-event">Create New Event</Link>
+          </Button>
+        </div>
+      </section>
+
+      <div className="wrapper my-8">
+        <EventCards
+          events={myOrganizedEvents}
+          currentUserId={clerkId}
+          emptyTitle="No events have been created yet"
+          emptyStateSubtext="Go create some now!"
+        />
+      </div>
+    </>
+  );
 };
 
-export default Page;
+export default ProfilePage;

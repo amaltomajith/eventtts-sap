@@ -2,6 +2,7 @@ import { HomeIcon, PersonIcon } from "@radix-ui/react-icons";
 import { CgProfile } from "react-icons/cg";
 import { FaRegHeart } from "react-icons/fa";
 import { TfiTicket } from "react-icons/tfi";
+import { IoLocationOutline } from "react-icons/io5";
 
 interface SidebarLink {
   image: JSX.Element;
@@ -14,6 +15,11 @@ export const sidebarLinks: SidebarLink[] = [
     image: <HomeIcon />,
     label: "Home",
     path: "/",
+  },
+  {
+    image: <IoLocationOutline />,
+    label: "Track",
+    path: "/track",
   },
   {
     image: <PersonIcon />,
