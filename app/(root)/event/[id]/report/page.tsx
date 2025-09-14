@@ -17,6 +17,15 @@ const ReportPage = async ({ params }: ReportPageProps) => {
 
   const event = await getEventById(id);
 
+  if (!event) {
+    return (
+      <div className="wrapper text-center">
+        <h1>Event not found</h1>
+        <p>The event you are looking for does not exist.</p>
+      </div>
+    );
+  }
+
   return (
     <>
       <section className="bg-primary-50 bg-dotted-pattern bg-cover bg-center py-5 md:py-10">
@@ -26,7 +35,7 @@ const ReportPage = async ({ params }: ReportPageProps) => {
       </section>
 
       <div className="wrapper my-8">
-        <ReportForm eventId={id} userId={userId} event={event} />
+        <ReportForm eventId={id} userId={userId} event={JSON.parse(JSON.stringify(event))} />
       </div>
     </>
   );

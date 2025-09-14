@@ -21,7 +21,11 @@ export default async function Home({ searchParams }: HomePageProps) {
   const searchText = params.q || "";
   const category = params.category || "";
 
-  const result = await getEvents(searchText, category, page);
+  const result = await getEvents({
+    query: searchText,
+    category,
+    page
+  });
 
   const events = result?.events || [];
   const totalPages = result?.totalPages || 0;
