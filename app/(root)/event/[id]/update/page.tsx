@@ -21,7 +21,7 @@ const UpdateEventPage = async ({ params }: UpdateEventPageProps) => {
 
   // Get the current user
   const user = await getUserByClerkId(userId);
-  
+
   // Get the event data
   const event = await getEventById(id);
 
@@ -34,13 +34,13 @@ const UpdateEventPage = async ({ params }: UpdateEventPageProps) => {
     <div className="bg-primary-50 bg-dotted-pattern bg-cover bg-center py-5 md:py-10">
       <div className="wrapper">
         <h2 className="h2-bold text-center sm:text-left">Update Event</h2>
-        
+
         <div className="my-8">
-          <EventForm 
-            userId={user._id} 
-            type="edit" 
-            event={event} 
-            eventId={event._id} 
+          <EventForm
+            userId={user._id}
+            type="edit"
+            event={event}
+            eventId={event._id}
           />
         </div>
       </div>
