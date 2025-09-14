@@ -112,7 +112,7 @@ const EventForm = ({ userId, type = "create", event, eventId }: Props) => {
 		if (event && type === 'edit') {
 			// Extract tag names if tags are objects with _id and name properties
 			const tagNames = event.tags.map(tag => typeof tag === 'object' ? tag.name : tag);
-			
+
 			return {
 				title: event.title || "",
 				category: event.category._id || event.category || "",
@@ -134,7 +134,7 @@ const EventForm = ({ userId, type = "create", event, eventId }: Props) => {
 				url: event.url || "",
 			};
 		}
-		
+
 		// Default values for create mode
 		return {
 			title: "",
@@ -199,6 +199,7 @@ const EventForm = ({ userId, type = "create", event, eventId }: Props) => {
 						category: values.category,
 						description: values.description,
 						photo: uploadedImageUrl,
+						imageUrl: uploadedImageUrl,
 						isOnline: values.isOnline,
 						location: values.location,
 						landmark: values.landmark,
@@ -233,6 +234,7 @@ const EventForm = ({ userId, type = "create", event, eventId }: Props) => {
 					category: values.category,
 					description: values.description,
 					photo: uploadedImageUrl,
+					imageUrl: uploadedImageUrl,
 					isOnline: values.isOnline,
 					location: values.location,
 					landmark: values.landmark,
@@ -302,9 +304,9 @@ const EventForm = ({ userId, type = "create", event, eventId }: Props) => {
 	};
 
 	// Update the removeTagHandler to work with both objects and strings
-	const removeTagHandler = (tag: any, field: any) => {
-		const newTags = field.value.filter((t: any) => {
-			if (typeof t === 'object' && typeof tag === 'object') {
+	const removeTagHandler = (tag: string | { _id: string; name: string }, field: any) => {
+		const newTags = field.value.filter((t: string | { _id: string; name: string }) => {
+			if (typeof t === 'object' && t !== null && typeof tag === 'object' && tag !== null) {
 				return t._id !== tag._id;
 			}
 			return t !== tag;
@@ -390,11 +392,11 @@ const EventForm = ({ userId, type = "create", event, eventId }: Props) => {
 
 									{field.value.length > 0 && (
 										<div className="flex justify-start items-center gap-2 flex-wrap uppercase mt-2">
-											{field.value.map((tag, index) => {
+											{field.value.map((tag: string | { _id: string; name: string }, index: number) => {
 												// Extract tag name if it's an object
-												const tagName = typeof tag === 'object' ? tag.name : tag;
-												const tagId = typeof tag === 'object' ? tag._id : tag;
-												
+												const tagName = typeof tag === 'object' && tag !== null ? tag.name : tag as string;
+												const tagId = typeof tag === 'object' && tag !== null ? tag._id : tag as string;
+
 												return (
 													<Badge key={tagId || index}>
 														{tagName}

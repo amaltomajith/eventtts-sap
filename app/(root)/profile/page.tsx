@@ -5,14 +5,14 @@ import { Button } from "@/components/ui/button";
 import EventCards from "@/components/shared/EventCards";
 import { getEventsByUserId } from "@/lib/actions/event.action";
 import { getOrdersByUserId } from "@/lib/actions/order.action";
-import IOrder from "@/lib/models/order.model"; 
+import { IOrder } from "@/types";
 import { getUserByClerkId } from "@/lib/actions/user.action";
 
 // ✅ This is the definitive fix for the headers/searchParams error
 export const dynamic = 'force-dynamic';
 
 interface ProfilePageProps {
-  searchParams: { page?: string };
+  searchParams: Promise<{ page?: string }>;
 }
 
 const ProfilePage = async ({ searchParams }: ProfilePageProps) => {
@@ -23,7 +23,9 @@ const ProfilePage = async ({ searchParams }: ProfilePageProps) => {
   }
 
   const mongoUser = await getUserByClerkId(clerkId);
-  const organizedEventsPage = Number(searchParams.page) || 1;
+  // Await searchParams in Next.js 15+
+  const params = await searchParams;
+  const organizedEventsPage = Number(params.page) || 1;
 
   const organizedEventsPromise = getEventsByUserId({ userId: mongoUser._id, page: organizedEventsPage });
   const ordersPromise = getOrdersByUserId({ userId: mongoUser._id });

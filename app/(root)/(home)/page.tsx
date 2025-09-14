@@ -9,18 +9,20 @@ import { getEvents } from "@/lib/actions/event.action";
 export const dynamic = 'force-dynamic';
 
 interface HomePageProps {
-  searchParams: { page?: string; q?: string; category?: string; };
+  searchParams: Promise<{ page?: string; q?: string; category?: string; }>;
 }
 
 export default async function Home({ searchParams }: HomePageProps) {
   const { userId } = auth();
 
-  const page = Number(searchParams.page) || 1;
-  const searchText = searchParams.q || "";
-  const category = searchParams.category || "";
+  // Await searchParams in Next.js 15+
+  const params = await searchParams;
+  const page = Number(params.page) || 1;
+  const searchText = params.q || "";
+  const category = params.category || "";
 
   const result = await getEvents(searchText, category, page);
-  
+
   const events = result?.events || [];
   const totalPages = result?.totalPages || 0;
 
@@ -46,7 +48,7 @@ export default async function Home({ searchParams }: HomePageProps) {
         emptyTitle="No Events Found"
         emptyStateSubtext="Come back later"
       />
-      
+
       {totalPages > 1 && (
         <Pagination page={page} totalPages={totalPages} />
       )}
