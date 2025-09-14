@@ -28,6 +28,7 @@ const Page = async () => {
 							<EventCard
 								key={event._id}
 								event={event}
+								currentUserId={userId}
 							/>
 						);
 					})
