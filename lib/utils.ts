@@ -65,6 +65,9 @@ export const dateConverter = (inputDateString: string) => {
 };
 
 export const timeFormatConverter = (timeString: string) => {
+  if (!timeString || typeof timeString !== 'string' || !timeString.includes(':')) {
+    return '--';
+  }
   const [hours, minutes] = timeString.split(':');
   let formattedHours = parseInt(hours, 10);
   const ampm = formattedHours >= 12 ? 'PM' : 'AM';
