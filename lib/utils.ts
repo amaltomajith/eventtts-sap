@@ -75,6 +75,9 @@ export const dateConverter = (inputDateString: string) => {
 };
 
 export const timeFormatConverter = (timeString: string) => {
+  if (!timeString || typeof timeString !== 'string' || !timeString.includes(':')) {
+    return '--';
+  }
   // Guard clause for empty or invalid input.
   if (!timeString || !timeString.includes(':')) return "Time not available";
 
