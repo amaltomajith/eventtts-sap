@@ -1,44 +1,47 @@
-import { Document, Schema, model, models } from "mongoose";
+import { Schema, model, models, Document } from "mongoose";
 
-// --- THIS IS THE FIX ---
-// Add the 'export' keyword to the interface definition
 export interface IEvent extends Document {
   _id: string;
   title: string;
-  description: string;
+  description?: string;
   location?: string;
   createdAt: Date;
-  photo: string;
+  imageUrl: string;
   startDate: Date;
   endDate: Date;
-  price?: string;
+  price?: number;
   isFree: boolean;
   url?: string;
-  category: { _id: string, name: string }
-  organizer: { _id: string, firstName: string, lastName: string }
-  ticketsLeft: number;
-  totalCapacity: number;
-  tags: { _id: string, name: string }[];
+  category: { _id: string; name: string };
+  organizer: { _id: string; firstName: string; lastName: string; clerkId: string; };
+  landmark?: string;
+  startTime: string;
+  endTime: string;
+  photo: string;
+  // ✅ Add tags to the interface
+  tags: { _id: string; name: string }[];
 }
-
 
 const EventSchema = new Schema({
   title: { type: String, required: true },
-  description: { type: String, required: true },
+  description: { type: String },
   location: { type: String },
   createdAt: { type: Date, default: Date.now },
-  photo: { type: String, required: true },
-  startDate: { type: Date, default: Date.now },
-  endDate: { type: Date, default: Date.now },
-  price: { type: String },
+  imageUrl: { type: String, required: true },
+  startDate: { type: Date, required: true },
+  endDate: { type: Date, required: true },
+  price: { type: Number },
   isFree: { type: Boolean, default: false },
   url: { type: String },
   category: { type: Schema.Types.ObjectId, ref: 'Category' },
   organizer: { type: Schema.Types.ObjectId, ref: 'User' },
-  ticketsLeft: { type: Number, default: 0 },
-  totalCapacity: { type: Number, default: 0 },
+  landmark: { type: String },
+  startTime: { type: String, required: true },
+  endTime: { type: String, required: true },
+  photo: { type: String, required: true },
+  // ✅ Add tags to the schema, referencing the 'Tag' model
   tags: [{ type: Schema.Types.ObjectId, ref: 'Tag' }],
-})
+});
 
 const Event = models.Event || model('Event', EventSchema);
 

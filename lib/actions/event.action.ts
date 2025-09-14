@@ -1,214 +1,248 @@
-"use server"
+"use server";
+
 import { revalidatePath } from "next/cache";
-import { FilterQuery } from 'mongoose';
+import { FilterQuery } from "mongoose";
 import { connectToDatabase } from "../dbconnection";
 import Category from "../models/category.model";
 import Event, { IEvent } from "../models/event.model";
 import Tag from "../models/tag.model";
 import User from "../models/user.model";
-import Order from '../models/order.model';
+import Order from "../models/order.model";
 import { getEventStatistics } from "./order.action";
 
+// --- HELPER FUNCTION FOR CATEGORY AND TAGS ---
+const getCategoryByName = async (name: string) => {
+  return Category.findOneAndUpdate(
+    { name: { $regex: name, $options: "i" } },
+    { $setOnInsert: { name } },
+    { new: true, upsert: true }
+  );
+};
+
+// --- CORE EVENT ACTIONS ---
 
 export async function createEvent(eventData: any) {
-    try {
-        await connectToDatabase();
+  try {
+    await connectToDatabase();
 
-        let data = eventData;
+    const category = await getCategoryByName(eventData.category);
 
-        data.ticketsLeft = data.totalCapacity;
+    const tagIds = await Promise.all(
+      eventData.tags.map((tag: string) =>
+        Tag.findOneAndUpdate(
+          { name: { $regex: tag, $options: "i" } },
+          { $setOnInsert: { name: tag } },
+          { new: true, upsert: true }
+        ).then((doc) => doc._id)
+      )
+    );
 
-        const category = await Category.findOne({ name: data.category });
+    const newEvent = await Event.create({
+      ...eventData,
+      category: category._id,
+      tags: tagIds,
+      ticketsLeft: eventData.totalCapacity,
+    });
 
-        if (!category) {
-            const newCategory = await Category.create({ name: data.category });
-            data.category = newCategory._id;
-        } else {
-            data.category = category._id;
-        }
+    // Add the new event to the tags it belongs to
+    await Tag.updateMany(
+      { _id: { $in: tagIds } },
+      { $push: { events: newEvent._id } }
+    );
 
-        const tagsId: any = [];
+    revalidatePath("/");
 
-        for (const tag of data.tags) {
-            const tagExists = await Tag.findOne({ name: tag });
-
-            if (!tagExists) {
-                const newTag = await Tag.create({ name: tag });
-                tagsId.push(newTag._id);
-            } else {
-                tagsId.push(tagExists._id);
-            }
-        };
-
-        data.tags = tagsId;
-
-        const event = await Event.create(data);
-
-        event.tags.forEach(async (tag: any) => {
-            const tagExists = await Tag.findById(tag);
-
-            if (tagExists) {
-                tagExists.events.push(event._id);
-                await tagExists.save();
-            }
-            else {
-                await Tag.create({ name: tag, events: [event._id] });
-            }
-        });
-
-        revalidatePath("/");
-
-        return JSON.parse(JSON.stringify(event));
-    } catch (error) {
-        console.log(error);
-        throw error;
-    }
+    return JSON.parse(JSON.stringify(newEvent));
+  } catch (error) {
+    console.error(error);
+    throw new Error("Failed to create event");
+  }
 }
 
-export async function getEvents(searchQuery: string, page = 1, pageSize = 12) {
-    try {
-        await connectToDatabase();
-        
-        const query: FilterQuery<IEvent> = {};
+export async function getEvents(
+  searchQuery: string,
+  categoryName: string,
+  page = 1,
+  pageSize = 12
+) {
+  try {
+    await connectToDatabase();
+    
+    // Sanitize page number to prevent errors
+    const pageNumber = Math.max(1, page);
+    const skip = (pageNumber - 1) * pageSize;
 
-        if (searchQuery) {
-            query.$or = [
-                { title: { $regex: new RegExp(searchQuery, "i") } },
-                { description: { $regex: new RegExp(searchQuery, "i") } }
-            ];
-        }
+    const query: FilterQuery<IEvent> = {};
 
-        await User.find();
-
-        const skip = (page - 1) * pageSize;
-
-        const events = await Event.find(query)
-            .populate("category", "name")
-            .populate("organizer", "firstName lastName email")
-            .populate("tags", "name")
-            .skip(skip)
-            .limit(pageSize);
-
-        const total = await Event.countDocuments(query);
-
-        const totalPages = Math.ceil(total / pageSize);
-
-        return { events: JSON.parse(JSON.stringify(events)), totalPages };
-    } catch (error) {
-        console.log(error);
-        throw error;
+    if (searchQuery) {
+      query.$or = [
+        { title: { $regex: new RegExp(searchQuery, "i") } },
+        { description: { $regex: new RegExp(searchQuery, "i") } },
+      ];
     }
+
+    if (categoryName) {
+      const category = await Category.findOne({ name: { $regex: new RegExp(categoryName, "i") } });
+      if (category) {
+        query.category = category._id;
+      } else {
+        // If category doesn't exist, return no events
+        return { events: [], totalPages: 0 };
+      }
+    }
+
+    const events = await Event.find(query)
+      .populate("category", "name")
+      .populate("organizer", "firstName lastName email")
+      .populate("tags", "name")
+      .sort({ createdAt: "desc" })
+      .skip(skip)
+      .limit(pageSize);
+
+    const total = await Event.countDocuments(query);
+    const totalPages = Math.ceil(total / pageSize);
+
+    return { events: JSON.parse(JSON.stringify(events)), totalPages };
+  } catch (error) {
+    console.error(error);
+    throw new Error("Failed to fetch events");
+  }
 }
 
 export async function getEventById(id: string) {
-    try {
-        await connectToDatabase();
+  try {
+    await connectToDatabase();
 
-        const event = await Event.findById(id)
-            .populate("category", "name")
-            .populate("organizer", "_id firstName lastName email")
-            .populate("tags", "name");
+    const event = await Event.findById(id)
+      .populate("category", "name")
+      .populate("organizer", "_id firstName lastName email")
+      .populate("tags", "name");
 
-        return JSON.parse(JSON.stringify(event));
-    } catch (error) {
-        console.log(error);
-        throw error;
-    }
+    if (!event) throw new Error("Event not found");
+
+    return JSON.parse(JSON.stringify(event));
+  } catch (error) {
+    console.error(error);
+    throw new Error("Failed to fetch event by ID");
+  }
 }
 
-export async function getEventsByCategory(category: string) {
-    try {
-        await connectToDatabase();
+export async function updateEvent({ userId, event, path }: { userId: string, event: any, path: string }) {
+  try {
+    await connectToDatabase();
 
-        const events = await Event.find({ category: category })
-            .populate("category", "name")
-            .populate("organizer", "firstName lastName email")
-            .populate("tags", "name");
-
-        return JSON.parse(JSON.stringify(events));
-    } catch (error) {
-        console.log(error);
-        throw error;
+    const eventToUpdate = await Event.findById(event._id);
+    if (!eventToUpdate || eventToUpdate.organizer.toHexString() !== userId) {
+      throw new Error("Unauthorized or event not found");
     }
+
+    const category = await getCategoryByName(event.category);
+    const tagIds = await Promise.all(
+        event.tags.map((tag: string) =>
+          Tag.findOneAndUpdate(
+            { name: { $regex: tag, $options: "i" } },
+            { $setOnInsert: { name: tag } },
+            { new: true, upsert: true }
+          ).then(doc => doc._id)
+        )
+    );
+    
+    const updatedEvent = await Event.findByIdAndUpdate(
+      event._id,
+      { ...event, category: category._id, tags: tagIds },
+      { new: true }
+    );
+    revalidatePath(path);
+
+    return JSON.parse(JSON.stringify(updatedEvent));
+  } catch (error) {
+    console.error(error);
+    throw new Error("Failed to update event");
+  }
+}
+
+export async function deleteEventById(eventId: string) {
+  try {
+    await connectToDatabase();
+
+    await Event.findByIdAndDelete(eventId);
+
+    // Clean up references in other collections
+    await Tag.updateMany({ events: eventId }, { $pull: { events: eventId } });
+    await User.updateMany({ likedEvents: eventId }, { $pull: { likedEvents: eventId } });
+    await Order.deleteMany({ event: eventId });
+
+    revalidatePath("/");
+    revalidatePath("/profile");
+  } catch (error) {
+    console.error(error);
+    throw new Error("Failed to delete event");
+  }
 }
 
 export async function getRelatedEvents(id: string) {
-    try {
-        await connectToDatabase();
+  try {
+    await connectToDatabase();
 
-        const event = await Event.findById(id);
+    const event = await Event.findById(id);
+    if (!event) throw new Error("Event not found");
 
-        const events = await Event.find({ _id: { $nin: event._id }, category: event.category, tags: { $in: event.tags } })
-            .populate("category", "name")
-            .populate("organizer", "firstName lastName email")
-            .populate("tags", "name");
+    const relatedEvents = await Event.find({
+      _id: { $ne: event._id }, // Correctly exclude the event itself
+      $or: [
+        { category: event.category }, 
+        { tags: { $in: event.tags } }
+      ],
+    })
+      .limit(3)
+      .populate("category", "name")
+      .populate("organizer", "firstName lastName email")
+      .populate("tags", "name");
 
-        return JSON.parse(JSON.stringify(events));
-    } catch (error) {
-        console.log(error);
-        throw error;
-    }
+    return JSON.parse(JSON.stringify(relatedEvents));
+  } catch (error) {
+    console.error(error);
+    throw new Error("Failed to get related events");
+  }
 }
 
-
-
-export async function deleteEventById(eventId: string) {
-    try {
-        await connectToDatabase();
-
-        const event = await Event.findByIdAndDelete(eventId);
-
-        await Tag.updateMany({ events: eventId }, { $pull: { events: eventId } });
-
-        await User.updateMany({ likedEvents: eventId }, { $pull: { likedEvents: eventId } });
-
-        await Order.deleteMany({ event: eventId });
-
-        revalidatePath("/");
-        revalidatePath("/profile");
-        revalidatePath("/tickets");
-        revalidatePath("/likes");
-
-        return JSON.parse(JSON.stringify(event));
-    } catch (error) {
-        console.log(error);
-        throw error;
-    }
-}
 export async function getEventsByUserId({ userId, page = 1, limit = 6 }: { userId: string, page?: number, limit?: number }) {
-    try {
-        await connectToDatabase();
+  try {
+    await connectToDatabase();
 
-        const conditions = { organizer: userId };
-        const skipAmount = (page - 1) * limit;
+    const conditions = { organizer: userId };
+    const skipAmount = (Math.max(1, page) - 1) * limit;
 
-        const eventsQuery = Event.find(conditions)
-            .sort({ createdAt: 'desc' })
-            .skip(skipAmount)
-            .limit(limit)
-            .populate("category", "name")
-            // ✅ FIX: Make sure to populate the organizer's clerkId
-            .populate("organizer", "_id firstName lastName email clerkId")
-            .populate("tags", "name");
+    const eventsQuery = Event.find(conditions)
+      .sort({ createdAt: 'desc' })
+      .skip(skipAmount)
+      .limit(limit)
+      .populate("category", "name")
+      // ✅ FIX: Use a more explicit populate object to ensure clerkId is fetched
+      .populate({
+        path: 'organizer',
+        model: 'User',
+        select: '_id firstName lastName clerkId' 
+      })
+      .populate("tags", "name");
 
-        const events = await eventsQuery;
-        const eventsCount = await Event.countDocuments(conditions);
+    const events = await eventsQuery;
+    const eventsCount = await Event.countDocuments(conditions);
 
-        return { data: JSON.parse(JSON.stringify(events)), totalPages: Math.ceil(eventsCount / limit) };
-    } catch (error) {
-        console.log(error);
-        throw error;
-    }
+    return { data: JSON.parse(JSON.stringify(events)), totalPages: Math.ceil(eventsCount / limit) };
+  } catch (error) {
+    console.log(error);
+    throw error;
+  }
 }
 
-// --- ADD THIS NEW FUNCTION AT THE END OF THE FILE ---
 export async function generateSalesReport(eventId: string) {
-    try {
-        // We can reuse the function from your order actions
-        const stats = await getEventStatistics(eventId);
-        return stats;
-    } catch (error) {
-        console.log(error);
-        throw error;
-    }
+  try {
+    // Reusing the function from order actions is a great idea!
+    const stats = await getEventStatistics(eventId);
+    return stats;
+  } catch (error) {
+    console.error(error);
+    throw new Error("Failed to generate sales report");
+  }
 }

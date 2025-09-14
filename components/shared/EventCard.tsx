@@ -4,40 +4,64 @@ import { Badge } from "../ui/badge";
 import { dateConverter, timeFormatConverter } from "@/lib/utils";
 import Link from "next/link";
 import LikeCartButton from "./LikeCartButton";
-import { auth } from "@clerk/nextjs";
 import { getUserByClerkId } from "@/lib/actions/user.action";
 import DeleteEventButton from "./DeleteEventButton";
+import { IEvent } from "@/lib/models/event.model";
+import { Button } from "../ui/button";
 
 interface Props {
-  event: any;
+  event: IEvent;
+  currentUserId: string | null;
   page?: string;
 }
 
-const EventCard = async ({ event, page }: Props) => {
-  const { userId } = auth();
-
+const EventCard = async ({ event, currentUserId, page }: Props) => {
   let user = null;
-
   let likedEvent = false;
 
-  if (userId) {
-    user = await getUserByClerkId(userId);
-    likedEvent = await user.likedEvents.includes(event._id);
+  if (currentUserId) {
+    user = await getUserByClerkId(currentUserId);
+    if (user?.likedEvents) {
+      likedEvent = user.likedEvents.includes(event._id);
+    }
   }
+
+  // Check if current user is the organizer of this event
+  const isOrganizer = user && event.organizer._id === user._id;
 
   return (
     <div className="border h-96 w-96 rounded-md flex flex-col hover:scale-95 transition-all shadow-md relative">
       <Link href={`/event/${event._id}`} className="w-full h-1/2">
         <Image
           src={event.photo}
-          alt={event._id}
+          alt={event.title}
           width={1920}
           height={1280}
-          className="w-full h-full rounded-md hover:opacity-80 transition-all relative"
+          className="w-full h-full rounded-md hover:opacity-80 transition-all relative object-cover"
         />
       </Link>
 
-      <LikeCartButton event={event} user={user} likedEvent={likedEvent} />
+      <LikeCartButton
+        event={event}
+        user={JSON.parse(JSON.stringify(user))}
+        likedEvent={likedEvent}
+      />
+
+      {/* Edit and AI Report buttons for organizer */}
+      {isOrganizer && (
+        <div className="absolute top-2 right-2 flex flex-col gap-2">
+          <Button asChild size="sm" className="bg-green-600">
+            <Link href={`/event/${event._id}/update`}>
+              Edit
+            </Link>
+          </Button>
+          <Button asChild size="sm" className="bg-blue-600">
+            <Link href={`/event/${event._id}/report`}>
+              AI Report
+            </Link>
+          </Button>
+        </div>
+      )}
 
       <Link
         href={`/event/${event._id}`}
@@ -56,10 +80,8 @@ const EventCard = async ({ event, page }: Props) => {
           <div className="flex flex-wrap gap-1">
             <p className="text-sm">
               {new Date(event.endDate) > new Date(event.startDate)
-                ? `${dateConverter(event.startDate)} - ${dateConverter(
-                    event.endDate
-                  )} `
-                : `${dateConverter(event.startDate)}`}
+                ? `${dateConverter(event.startDate as unknown as string)} - ${dateConverter(event.endDate as unknown as string)}`
+                : `${dateConverter(event.startDate as unknown as string)}`}
             </p>
             &nbsp;
             <p className="text-sm">
@@ -73,10 +95,10 @@ const EventCard = async ({ event, page }: Props) => {
           </p>
         </div>
       </Link>
-      <div className="flex justify-between">
+      <div className="flex justify-between items-center p-1">
         <Badge
           variant={"secondary"}
-          className="m-1 w-fit"
+          className="w-fit"
         >{`${event.organizer.firstName} ${event.organizer.lastName}`}</Badge>
         {page === "profile" && <DeleteEventButton event={event} />}
       </div>

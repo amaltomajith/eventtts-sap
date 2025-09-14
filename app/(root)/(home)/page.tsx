@@ -1,70 +1,55 @@
-// app/(root)/(home)/page.tsx
-
+import { auth } from "@clerk/nextjs";
 import Categories from "@/components/shared/Categories";
 import EventCards from "@/components/shared/EventCards";
-import NoResults from "@/components/shared/NoResults";
 import Pagination from "@/components/shared/Pagination";
 import SearchBar from "@/components/shared/SearchBar";
-import { getCategoryByName } from "@/lib/actions/category.action";
-import { getEvents, getEventsByCategory } from "@/lib/actions/event.action";
+import { getEvents } from "@/lib/actions/event.action";
 
-interface Props {
-	searchParams: { [key: string]: string | undefined };
+// ✅ This is the definitive fix for the headers/searchParams error
+export const dynamic = 'force-dynamic';
+
+interface HomePageProps {
+  searchParams: { page?: string; q?: string; category?: string; };
 }
 
-export default async function Home({ searchParams }: Props) {
-	// ✅ FIX: Await searchParams at the top
-	const awaitedSearchParams = await searchParams;
+export default async function Home({ searchParams }: HomePageProps) {
+  const { userId } = auth();
 
-	const page = Number(awaitedSearchParams.page) || 1;
-	const searchText = awaitedSearchParams.q || "";
-	const category = awaitedSearchParams.category || "";
+  const page = Number(searchParams.page) || 1;
+  const searchText = searchParams.q || "";
+  const category = searchParams.category || "";
 
-	let events = [];
-	let totalPages = 0;
+  const result = await getEvents(searchText, category, page);
+  
+  const events = result?.events || [];
+  const totalPages = result?.totalPages || 0;
 
-	try {
-		if (category) {
-			const categoryDoc = await getCategoryByName(category);
-			if (categoryDoc) {
-				events = await getEventsByCategory(categoryDoc._id);
-			}
-		} else {
-			const result = await getEvents(searchText, page);
-			events = result.events;
-			totalPages = result.totalPages;
-		}
-	} catch (error) {
-		console.error("Failed to fetch events:", error);
-	}
+  return (
+    <>
+      <h2 className="text-4xl max-sm:text-2xl font-bold text-center text-primary bg-clip-text mb-10 pt-20">
+        Search for Events in your Campus
+      </h2>
 
-	return (
-		<>
-			<h2 className="text-4xl max-sm:text-2xl font-bold text-center text-primary bg-clip-text mb-10 pt-20">
-				Search for Events in your Campus
-			</h2>
-			<div className="flex justify-center items-center mb-16">
-				<SearchBar
-					route="/"
-					placeholder="Search title..."
-					otherClasses="w-96"
-				/>
-			</div>
-			<Categories />
-			{events.length > 0 ? (
-				<EventCards events={events} />
-			) : (
-				<NoResults
-					title={"No events found"}
-					desc={"Try a different search or check back later!"}
-					link={"/"}
-					linkTitle={"Explore All Events"}
-				/>
-			)}
-			<Pagination
-				page={page}
-				totalPages={totalPages}
-			/>
-		</>
-	);
+      <div className="flex justify-center items-center mb-16">
+        <SearchBar
+          route="/"
+          placeholder="Search title..."
+          otherClasses="w-96"
+        />
+      </div>
+
+      <Categories />
+
+      <EventCards
+        events={events}
+        currentUserId={userId}
+        emptyTitle="No Events Found"
+        emptyStateSubtext="Come back later"
+      />
+      
+      {totalPages > 1 && (
+        <Pagination page={page} totalPages={totalPages} />
+      )}
+    </>
+  );
 }

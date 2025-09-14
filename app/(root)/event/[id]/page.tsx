@@ -1,10 +1,7 @@
-// app/(root)/event/[id]/page.tsx
-
 import EventCards from "@/components/shared/EventCards";
 import LikeCartButton from "@/components/shared/LikeCartButton";
 import NoResults from "@/components/shared/NoResults";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { getEventById, getRelatedEvents } from "@/lib/actions/event.action";
 import { getUserByClerkId } from "@/lib/actions/user.action";
 import { dateConverter, timeFormatConverter } from "@/lib/utils";
@@ -12,32 +9,30 @@ import { auth } from "@clerk/nextjs";
 import Image from "next/image";
 import Link from "next/link";
 import React from "react";
-import { getEventById, getRelatedEvents } from "@/lib/actions/event.action";
-import { getUserByClerkId } from "@/lib/actions/user.action";
-import { auth } from "@clerk/nextjs";
-import { headers } from "next/headers"; // Import headers
+import { headers } from "next/headers";
 
 interface Props {
     params: { id: string };
 }
 
 const Page = async ({ params }: Props) => {
-    const { userId } = auth();
+    // ✅ FIX: Await headers() and params at the top
+    await headers();
+    const awaitedParams = await params;
 
+    const { userId } = auth();
     let user = null;
-    let likedEvent = null;
+    let likedEvent = false;
 
     if (userId) {
         user = await getUserByClerkId(userId);
-        likedEvent = await user.likedEvents.includes(params.id);
+        if (user) {
+            likedEvent = user.likedEvents.includes(awaitedParams.id);
+        }
     }
 
-    const event = await getEventById(params.id);
-
-    const relatedEvents = await getRelatedEvents(params.id);
-
-    // Logic for the "Create Report" button visibility
-    const eventHasEnded = new Date(event.endDate) < new Date();
+    const event = await getEventById(awaitedParams.id);
+    const relatedEvents = await getRelatedEvents(awaitedParams.id);
 
     return (
         <div className="font-medium md:mx-24">
@@ -51,28 +46,24 @@ const Page = async ({ params }: Props) => {
                     className="rounded-md w-full h-full object-contain"
                 />
             </div>
-            <div className="flex flex-col gap-5">
+            <div className="flex flex-col gap-5 mt-5">
                 <h2 className="text-4xl max-sm:text-2xl mt-3">{event.title}</h2>
 
-                <div className="flex max-sm:flex-wrap justify-left max-sm:justify-betwee items-center gap-3">
+                <div className="flex max-sm:flex-wrap justify-start items-center gap-3">
                     <Badge className="text-base">
                         {event.isFree ? `Free` : `₹ ${event.price}`}
                     </Badge>
-                    <Badge
-                        className="text-base"
-                        variant={"secondary"}
-                    >
+                    <Badge className="text-base" variant={"secondary"}>
                         {event.category.name}
                     </Badge>
-                    <Badge
-                        className="text-base"
-                        variant={"secondary"}
-                    >{`By ${event.organizer?.firstName} ${event.organizer?.lastName}`}</Badge>
+                    <Badge className="text-base" variant={"secondary"}>
+                        {`By ${event.organizer?.firstName} ${event.organizer?.lastName}`}
+                    </Badge>
                 </div>
 
                 <LikeCartButton
-                    event={event}
-                    user={user}
+                    event={JSON.parse(JSON.stringify(event))}
+                    user={JSON.parse(JSON.stringify(user))}
                     likedEvent={likedEvent}
                     option="eventPage"
                 />
@@ -80,9 +71,7 @@ const Page = async ({ params }: Props) => {
                 <div className="flex flex-wrap gap-3">
                     <div>
                         {new Date(event.endDate) > new Date(event.startDate)
-                            ? `${dateConverter(
-                                event.startDate
-                            )} - ${dateConverter(event.endDate)}`
+                            ? `${dateConverter(event.startDate)} - ${dateConverter(event.endDate)}`
                             : `${dateConverter(event.startDate)}`}
                     </div>
                     &nbsp;
@@ -98,40 +87,18 @@ const Page = async ({ params }: Props) => {
 
                 <div>{event.description}</div>
 
-                <Link
-                    href={event.url}
-                    className="text-blue-700 "
-                >
+                <Link href={event.url} className="text-blue-700 underline hover:text-blue-900">
                     {event.url}
                 </Link>
 
                 <div className="flex flex-wrap gap-3">
-                    {event.tags?.map((tag: any) => {
-                        return (
-                            <Badge
-                                key={tag.name}
-                                variant={"secondary"}
-                                className=""
-                            >
-                                {tag.name}
-                            </Badge>
-                        );
-                    })}
+                    {event.tags?.map((tag: any) => (
+                        <Badge key={tag.name} variant={"secondary"}>
+                            {tag.name}
+                        </Badge>
+                    ))}
                 </div>
             </div>
-
-            {/* --- SECTION FOR THE "CREATE REPORT" BUTTON --- */}
-            {/* The isEventCreator check has been removed */}
-            {eventHasEnded && (
-                <section className="wrapper my-8">
-                    <Button asChild className="button w-full sm:w-fit" size="lg">
-                        <Link href={`/event/${event._id}/report`}>
-                            Create Report
-                        </Link>
-                    </Button>
-                </section>
-            )}
-            {/* --- END OF SECTION --- */}
 
             <div className="mt-10">
                 <h2 className="text-4xl max-sm:text-2xl mt-3 text-center text-primary font-bold">
@@ -144,8 +111,8 @@ const Page = async ({ params }: Props) => {
                     <NoResults
                         title={"No Related Events Found"}
                         desc={""}
-                        link={"/#categories"}
-                        linkTitle={"Explore Events"}
+                        link={"/"}
+                        linkTitle={"Explore All Events"}
                     />
                 )}
             </div>
