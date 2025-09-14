@@ -53,7 +53,7 @@ const Collection = ({
         const isOrganizer = currentUserId === event.organizer.clerkId;
 
         return (
-          <div key={event._id} className="flex justify-center">
+          <div key={event._id?.toString()} className="flex justify-center">
             <Card
               event={event}
               isOrganizer={collectionType === 'Events_Organized' && isOrganizer}

@@ -16,13 +16,11 @@ import { deleteEventById } from "@/lib/actions/event.action";
 const DeleteEventButton = ({ event }: any) => {
   const handleDeleteEvent = async (eventId: string) => {
     try {
-      const event = await deleteEventById(eventId);
-
-      if (event) {
-        toast({
-          title: "Event deleted successfully.",
-        });
-      }
+      await deleteEventById(eventId);
+      
+      toast({
+        title: "Event deleted successfully.",
+      });
     } catch (error: any) {
       toast({
         variant: "destructive",

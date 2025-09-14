@@ -26,7 +26,7 @@ const EventCards = ({ events, currentUserId, emptyTitle, emptyStateSubtext }: Ev
     <div className="grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-3 xl:gap-10">
       {events.map((event) => (
         <EventCard 
-          key={event._id} 
+          key={event._id?.toString()} 
           event={event} 
           currentUserId={currentUserId} 
         />

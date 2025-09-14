@@ -42,7 +42,7 @@ const Card = ({ event, isOrganizer }: CardProps) => {
   const handleReportClick = async () => {
     setIsReportLoading(true);
     try {
-      const stats = await generateSalesReport(event._id);
+      const stats = await generateSalesReport((event._id as any)?.toString());
       setReportData(stats);
     } catch (error) {
       console.error("Failed to generate sales report:", error);

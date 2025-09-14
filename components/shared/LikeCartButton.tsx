@@ -78,7 +78,7 @@ const CheckoutDialog = ({ event, user, children }: CheckoutDialogProps) => {
 
     try {
       // ✅ fetch latest event to avoid overselling
-      const currentEvent = await getEventById(event._id);
+      const currentEvent = await getEventById(event._id.toString());
       if (!currentEvent) throw new Error("Event not found");
 
       // ✅ pick correct event (parent for sub-events)
@@ -178,7 +178,7 @@ const CheckoutDialog = ({ event, user, children }: CheckoutDialogProps) => {
 // LikeCartButton Component
 // -------------------------------------------------------------
 interface LikeCartButtonProps {
-  event: EventWithSubEvents;
+  event: any; // Accept both IEvent and EventWithSubEvents
   user: any;
   likedEvent: boolean;
   option?: string;
@@ -219,7 +219,7 @@ const LikeCartButton = ({ event, user, likedEvent, option }: LikeCartButtonProps
     }
 
     try {
-      await likeEvent(event._id, user._id);
+      await likeEvent(event._id.toString(), user._id);
       setIsLiked((prev) => !prev);
 
       toast({

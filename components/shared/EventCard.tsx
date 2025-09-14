@@ -81,7 +81,7 @@ const EventCard = async ({ event, currentUserId, page }: Props) => {
           <Badge variant="default">
             {event.isFree ? "Free" : `₹ ${event.price}`}
           </Badge>
-          <Badge variant="secondary">{event.category.name}</Badge>
+          <Badge variant="secondary">{(event.category as any)?.name || 'Uncategorized'}</Badge>
           {event.subEvents && event.subEvents.length > 0 && (
             <Badge variant="outline">Main Event</Badge>
           )}
@@ -114,7 +114,7 @@ const EventCard = async ({ event, currentUserId, page }: Props) => {
       <div className="flex justify-between items-center p-2 border-t">
         <Badge variant={"secondary"} className="w-fit">
           {event.organizer
-            ? `${event.organizer.firstName} ${event.organizer.lastName}`
+            ? `${(event.organizer as any)?.firstName || ''} ${(event.organizer as any)?.lastName || ''}`
             : "Organizer"}
         </Badge>
 

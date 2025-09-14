@@ -271,8 +271,10 @@ const EventForm = ({ userId, type = "create", event, eventId }: Props) => {
 	// ---------------- FORM JSX ----------------
 	return (
 		<Form {...form}>
-			{/* FORM CONTENT (same as your UI) */}
-			{/* ... keep all JSX ... */}
+			<div>
+				{/* TODO: Add form content back */}
+				<p>Form content needs to be restored</p>
+			</div>
 		</Form>
 	);
 };
