@@ -15,7 +15,8 @@ const Page = async () => {
 
 	const user = await getUserByClerkId(userId);
 
-	const events = await getOrdersByUserId(user._id);
+	const orders = await getOrdersByUserId({ userId: user._id });
+	const events = orders?.data || [];
 
 	const upcomingEvents = events.filter((event: any) => {
 		return new Date(event.event.startDate) > new Date();
@@ -49,8 +50,8 @@ const Page = async () => {
 				<NoResults
 					title={"You don't have any past events"}
 					desc={""}
-					// link={"/#categories"}
-					// linkTitle={"Explore Events"}
+				// link={"/#categories"}
+				// linkTitle={"Explore Events"}
 				/>
 			)}
 		</div>
