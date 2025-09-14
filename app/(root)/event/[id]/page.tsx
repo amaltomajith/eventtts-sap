@@ -106,7 +106,12 @@ const Page = async ({ params }: Props) => {
                 </h2>
                 <br />
                 {relatedEvents.length > 0 ? (
-                    <EventCards events={relatedEvents} />
+                    <EventCards
+                        events={relatedEvents}
+                        currentUserId={userId}
+                        emptyTitle="No Related Events Found"
+                        emptyStateSubtext="Check out other events below"
+                    />
                 ) : (
                     <NoResults
                         title={"No Related Events Found"}
