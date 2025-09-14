@@ -30,6 +30,9 @@ const UpdateEventPage = async ({ params }: UpdateEventPageProps) => {
     redirect("/");
   }
 
+  // Serialize the event to match IEvent interface expected by EventForm
+  const serializedEvent = JSON.parse(JSON.stringify(event));
+
   return (
     <div className="bg-primary-50 bg-dotted-pattern bg-cover bg-center py-5 md:py-10">
       <div className="wrapper">
@@ -39,8 +42,8 @@ const UpdateEventPage = async ({ params }: UpdateEventPageProps) => {
           <EventForm
             userId={user._id}
             type="edit"
-            event={event}
-            eventId={event._id}
+            event={serializedEvent}
+            eventId={event._id.toString()}
           />
         </div>
       </div>
