@@ -11,11 +11,11 @@ interface LocationSelectorProps {
   selectedLocation: string | null;
 }
 
-export default function LocationSelector({ 
-  locations, 
-  currentLocation, 
-  onSelect, 
-  selectedLocation 
+export default function LocationSelector({
+  locations,
+  currentLocation,
+  onSelect,
+  selectedLocation
 }: LocationSelectorProps) {
   // Filter out the current location from the options
   const destinationOptions = locations.filter(loc => loc !== currentLocation);
@@ -26,15 +26,15 @@ export default function LocationSelector({
         <h3 className="font-semibold text-xl">Select Your Destination</h3>
         <p className="text-sm text-muted-foreground mt-2">Choose where you'd like to navigate to on campus</p>
       </div>
-      
+
       <div className="grid grid-cols-1 gap-4 max-h-[400px] overflow-y-auto pr-2">
         {destinationOptions.map((location) => (
           <div
             key={location}
             className={cn(
               "flex items-center space-x-4 p-5 rounded-lg border-2 cursor-pointer transition-all duration-200 hover:shadow-md",
-              selectedLocation === location 
-                ? "border-primary bg-primary/10 shadow-sm" 
+              selectedLocation === location
+                ? "border-primary bg-primary/10 shadow-sm"
                 : "border-border hover:border-primary/50 hover:bg-muted/50"
             )}
             onClick={() => onSelect(location)}

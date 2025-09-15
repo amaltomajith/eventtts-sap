@@ -26,11 +26,11 @@ interface GPSSettingsProps {
   className?: string;
 }
 
-export default function GPSSettings({ 
-  settings, 
-  onSettingsChange, 
+export default function GPSSettings({
+  settings,
+  onSettingsChange,
   onRequestGPSPermission,
-  className 
+  className
 }: GPSSettingsProps) {
   const [gpsPermission, setGpsPermission] = useState<GPSPermissionState>({
     granted: false,
@@ -59,7 +59,7 @@ export default function GPSSettings({
   // Update weights when individual toggles change
   const handleGPSToggle = (enabled: boolean) => {
     const newSettings = { ...settings, gpsEnabled: enabled };
-    
+
     // If GPS is disabled, give all weight to AI
     if (!enabled && settings.aiEnabled) {
       newSettings.gpsWeight = 0;
@@ -75,13 +75,13 @@ export default function GPSSettings({
       newSettings.gpsWeight = 40;
       newSettings.aiWeight = 60;
     }
-    
+
     onSettingsChange(newSettings);
   };
 
   const handleAIToggle = (enabled: boolean) => {
     const newSettings = { ...settings, aiEnabled: enabled };
-    
+
     // If AI is disabled, give all weight to GPS
     if (!enabled && settings.gpsEnabled) {
       newSettings.gpsWeight = 100;
@@ -97,14 +97,14 @@ export default function GPSSettings({
       newSettings.gpsWeight = 40;
       newSettings.aiWeight = 60;
     }
-    
+
     onSettingsChange(newSettings);
   };
 
   const handleWeightChange = (value: number[]) => {
     const gpsWeight = value[0];
     const aiWeight = 100 - gpsWeight;
-    
+
     onSettingsChange({
       ...settings,
       gpsWeight,
@@ -153,7 +153,7 @@ export default function GPSSettings({
           Configure how location predictions are made using GPS and AI technology
         </CardDescription>
       </CardHeader>
-      
+
       <CardContent className="space-y-8">
         {/* GPS Permission Status */}
         <div className="flex items-center justify-between p-5 bg-muted/80 rounded-lg border">
@@ -162,9 +162,9 @@ export default function GPSSettings({
             <span className="font-medium">{getGPSStatusText()}</span>
           </div>
           {(gpsPermission.prompt || gpsPermission.denied) && (
-            <Button 
-              size="sm" 
-              variant="outline" 
+            <Button
+              size="sm"
+              variant="outline"
               onClick={handleRequestPermission}
               disabled={isCheckingPermission}
               className="px-4 py-2"
@@ -180,7 +180,7 @@ export default function GPSSettings({
             <h4 className="font-semibold text-lg">Prediction Methods</h4>
             <p className="text-sm text-muted-foreground mt-1">Choose which technologies to use for location detection</p>
           </div>
-          
+
           {/* GPS Toggle */}
           <div className="flex items-center justify-between p-4 bg-blue-50 dark:bg-blue-950/30 rounded-lg border border-blue-200 dark:border-blue-800">
             <div className="flex items-center gap-4">
@@ -252,7 +252,7 @@ export default function GPSSettings({
                   </Badge>
                 </div>
               </div>
-              
+
               <div className="space-y-2">
                 <div className="flex justify-between text-xs text-muted-foreground">
                   <span>More GPS</span>
