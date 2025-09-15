@@ -1,9 +1,14 @@
+import { lazy, Suspense } from "react";
 import { auth } from "@clerk/nextjs";
-import Categories from "@/components/shared/Categories";
-import EventCards from "@/components/shared/EventCards";
-import Pagination from "@/components/shared/Pagination";
-import SearchBar from "@/components/shared/SearchBar";
+import EventsHero from "@/components/shared/EventsHero";
+import LoadingSpinner from "@/components/shared/LoadingSpinner";
 import { getEvents } from "@/lib/actions/event.action";
+
+// Lazy load components that are not immediately visible  
+const FeaturesSection = lazy(() => import("@/components/shared/FeaturesSection"));
+const StatsSection = lazy(() => import("@/components/shared/StatsSection"));
+const VideoSection = lazy(() => import("@/components/shared/VideoSection"));
+const CTASections = lazy(() => import("@/components/shared/CTASections"));
 
 // ✅ This is the definitive fix for the headers/searchParams error
 export const dynamic = 'force-dynamic';
@@ -32,30 +37,25 @@ export default async function Home({ searchParams }: HomePageProps) {
 
   return (
     <>
-      <h2 className="text-4xl max-sm:text-2xl font-bold text-center text-primary bg-clip-text mb-10 pt-20">
-        Search for Events in your Campus
-      </h2>
+      {/* Modern Hero Section */}
+      <EventsHero />
 
-      <div className="flex justify-center items-center mb-16">
-        <SearchBar
-          route="/"
-          placeholder="Search title..."
-          otherClasses="w-96"
-        />
-      </div>
+      {/* Lazy-loaded sections with loading fallbacks */}
+      <Suspense fallback={<LoadingSpinner className="py-24 bg-gray-50" />}>
+        <FeaturesSection />
+      </Suspense>
 
-      <Categories />
+      {/* <Suspense fallback={<LoadingSpinner className="py-24 bg-white" />}>
+        <StatsSection />
+      </Suspense> */}
 
-      <EventCards
-        events={events}
-        currentUserId={userId}
-        emptyTitle="No Events Found"
-        emptyStateSubtext="Come back later"
-      />
+      {/* <Suspense fallback={<LoadingSpinner className="py-24 bg-gray-50" />}>
+        <VideoSection />
+      </Suspense> */}
 
-      {totalPages > 1 && (
-        <Pagination page={page} totalPages={totalPages} />
-      )}
+      <Suspense fallback={<LoadingSpinner className="py-24 bg-white" />}>
+        <CTASections />
+      </Suspense>
     </>
   );
 }

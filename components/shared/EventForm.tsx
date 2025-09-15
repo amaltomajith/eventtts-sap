@@ -23,6 +23,7 @@ import { Calendar } from "../ui/calendar";
 import Image from "next/image";
 import { Badge } from "../ui/badge";
 import { categories } from "@/constants/categories";
+import { campusLocations } from "@/lib/campus-data";
 import { createEvent, updateEvent } from "@/lib/actions/event.action";
 import { Textarea } from "../ui/textarea";
 import { useToast } from "../ui/use-toast";
@@ -30,6 +31,13 @@ import { useRouter } from "next/navigation";
 import { FileUploader } from "./FileUploader";
 import SubEventForm from "./SubEventForm";
 import { useUploadThing } from "@/lib/uploadthing";
+import {
+	Select,
+	SelectContent,
+	SelectItem,
+	SelectTrigger,
+	SelectValue,
+} from "@/c-components/ui/select";
 
 // ---------------- SUB EVENT SCHEMA ----------------
 const subEventSchema = z.object({
@@ -58,6 +66,7 @@ const formSchema = z.object({
 	isOnline: z.boolean().optional(),
 	location: z.string().trim().optional(),
 	landmark: z.string().trim().optional(),
+	campusLocation: z.string().trim().optional(),
 	startDate: z.date(),
 	endDate: z.date(),
 	startTime: z.string(),
@@ -82,6 +91,7 @@ interface IEvent {
 	isOnline?: boolean;
 	location?: string;
 	landmark?: string;
+	campusLocation?: string;
 	startDate: string | Date;
 	endDate: string | Date;
 	startTime: string;
@@ -127,6 +137,7 @@ const EventForm = ({ userId, type = "create", event, eventId }: Props) => {
 				isOnline: event.isOnline || false,
 				location: event.location || "",
 				landmark: event.landmark || "",
+				campusLocation: event.campusLocation || "",
 				startDate: new Date(event.startDate),
 				endDate: new Date(event.endDate),
 				startTime: event.startTime || "",
@@ -149,6 +160,7 @@ const EventForm = ({ userId, type = "create", event, eventId }: Props) => {
 			isOnline: false,
 			location: "",
 			landmark: "",
+			campusLocation: "",
 			startDate: new Date(),
 			endDate: new Date(),
 			startTime: "",
@@ -286,60 +298,80 @@ const EventForm = ({ userId, type = "create", event, eventId }: Props) => {
 					)}
 				/>
 
-				{/* Category Field */}
-				<FormField
-					control={form.control}
-					name="category"
-					render={({ field }: any) => (
-						<FormItem className="w-full">
-							<FormControl>
-								<select {...field} className="input-field">
-									<option value="">Select Category</option>
-									{categories.map((category, index) => (
-										<option key={index} value={category.title.toLowerCase()}>
-											{category.title}
-										</option>
-									))}
-								</select>
-							</FormControl>
-							<FormMessage />
-						</FormItem>
-					)}
-				/>
-
-				{/* Tags Field */}
-				<FormField
-					control={form.control}
-					name="tags"
-					render={({ field }: any) => (
-						<FormItem className="w-full">
-							<FormControl>
-								<div>
-									<Input
-										placeholder="Add tags (press Enter or comma to add)"
-										onKeyDown={(e) => handleKeyDown(e, field)}
-										className="input-field"
-									/>
-									<div className="flex flex-wrap gap-2 mt-2">
-										{field.value?.map((tag: string, index: number) => (
-											<Badge key={index} variant="secondary" className="cursor-pointer">
-												{tag}
-												<button
-													type="button"
-													onClick={() => removeTagHandler(tag, field)}
-													className="ml-1 text-red-500"
+				{/* Category and Tags Fields - Side by Side */}
+				<div className="flex flex-col md:flex-row gap-4 w-full">
+					{/* Category Field */}
+					<FormField
+						control={form.control}
+						name="category"
+						render={({ field }: any) => (
+							<FormItem className="w-full md:w-1/2">
+								<FormLabel className="text-gray-700 font-medium">Category</FormLabel>
+								<FormControl>
+									<Select onValueChange={field.onChange} defaultValue={field.value}>
+										<SelectTrigger className="w-full h-12 border-gray-300 focus:border-red-500 focus:ring-2 focus:ring-red-200 rounded-lg bg-white hover:bg-gray-50 transition-all duration-200">
+											<SelectValue placeholder="Select Category" className="text-gray-700" />
+										</SelectTrigger>
+										<SelectContent className="max-h-60 w-full bg-white border border-gray-200 rounded-lg shadow-xl">
+											{categories.map((category, index) => (
+												<SelectItem
+													key={index}
+													value={category.title.toLowerCase()}
+													className="flex items-center space-x-3 px-4 py-3 hover:bg-red-50 focus:bg-red-100 cursor-pointer transition-colors duration-150"
 												>
-													×
-												</button>
-											</Badge>
-										))}
+													<div className="flex items-center space-x-2">
+														<span className="text-red-600 text-lg">
+															{category.icon}
+														</span>
+														<span className="text-gray-800 font-medium">
+															{category.title}
+														</span>
+													</div>
+												</SelectItem>
+											))}
+										</SelectContent>
+									</Select>
+								</FormControl>
+								<FormMessage />
+							</FormItem>
+						)}
+					/>
+
+					{/* Tags Field */}
+					<FormField
+						control={form.control}
+						name="tags"
+						render={({ field }: any) => (
+							<FormItem className="w-full md:w-1/2">
+								<FormLabel className="text-gray-700 font-medium">Tags</FormLabel>
+								<FormControl>
+									<div>
+										<Input
+											placeholder="Add tags (press Enter or comma to add)"
+											onKeyDown={(e) => handleKeyDown(e, field)}
+											className="input-field h-12"
+										/>
+										<div className="flex flex-wrap gap-2 mt-2">
+											{field.value?.map((tag: string, index: number) => (
+												<Badge key={index} variant="secondary" className="cursor-pointer">
+													{tag}
+													<button
+														type="button"
+														onClick={() => removeTagHandler(tag, field)}
+														className="ml-1 text-red-500"
+													>
+														×
+													</button>
+												</Badge>
+											))}
+										</div>
 									</div>
-								</div>
-							</FormControl>
-							<FormMessage />
-						</FormItem>
-					)}
-				/>
+								</FormControl>
+								<FormMessage />
+							</FormItem>
+						)}
+					/>
+				</div>
 
 				{/* Description Field */}
 				<FormField
@@ -400,6 +432,38 @@ const EventForm = ({ userId, type = "create", event, eventId }: Props) => {
 						)}
 					/>
 				</div>
+
+				{/* Campus Location Field */}
+				<FormField
+					control={form.control}
+					name="campusLocation"
+					render={({ field }: any) => (
+						<FormItem className="w-full">
+							<FormLabel className="text-gray-700 font-medium">Campus Location (for Navigation)</FormLabel>
+							<FormControl>
+								<Select onValueChange={field.onChange} defaultValue={field.value}>
+									<SelectTrigger className="w-full h-12 border-gray-300 focus:border-red-500 focus:ring-2 focus:ring-red-200 rounded-lg bg-white hover:bg-gray-50 transition-all duration-200">
+										<SelectValue placeholder="Select Campus Location" className="text-gray-700" />
+									</SelectTrigger>
+									<SelectContent className="max-h-60 w-full bg-white border border-gray-200 rounded-lg shadow-xl">
+										{campusLocations.map((location, index) => (
+											<SelectItem
+												key={index}
+												value={location.name}
+												className="flex items-center space-x-3 px-4 py-3 hover:bg-red-50 focus:bg-red-100 cursor-pointer transition-colors duration-150"
+											>
+												<span className="text-gray-800 font-medium">
+													{location.name}
+												</span>
+											</SelectItem>
+										))}
+									</SelectContent>
+								</Select>
+							</FormControl>
+							<FormMessage />
+						</FormItem>
+					)}
+				/>
 
 				{/* Date Fields */}
 				<div className="flex flex-col gap-5 md:flex-row">
@@ -648,14 +712,23 @@ const EventForm = ({ userId, type = "create", event, eventId }: Props) => {
 					))}
 				</div>
 
-				<Button
-					type="submit"
-					size="lg"
-					disabled={isSubmitting}
-					className="button col-span-2 w-full"
-				>
-					{isSubmitting ? "Submitting..." : `${type === "create" ? "Create Event" : "Update Event"}`}
-				</Button>
+				<div className="col-span-2 mt-8 mb-12">
+					<Button
+						type="submit"
+						size="lg"
+						disabled={isSubmitting}
+						className="w-full bg-gradient-to-r from-red-600 to-red-600 hover:from-red-700 hover:to-red-700 text-white font-semibold py-4 px-8 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 text-lg"
+					>
+						{isSubmitting ? (
+							<span className="flex items-center justify-center gap-2">
+								<div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+								Submitting...
+							</span>
+						) : (
+							`${type === "create" ? "Create Event" : "Update Event"}`
+						)}
+					</Button>
+				</div>
 			</form>
 		</Form>
 	);

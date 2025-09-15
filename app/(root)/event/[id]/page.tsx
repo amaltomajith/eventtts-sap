@@ -132,9 +132,18 @@ const Page = async ({ params }: Props) => {
 					</h2>
 					<br />
 					<div className="flex flex-wrap justify-center gap-5">
-						{event.subEvents.map((subEvent: any) => (
-							<EventCard key={subEvent._id} event={subEvent} currentUserId={userId} />
-						))}
+						{event.subEvents.map((subEvent: any) => {
+							const subEventLikedEvent = user?.likedEvents ? user.likedEvents.includes(subEvent._id) : false;
+							return (
+								<EventCard
+									key={subEvent._id}
+									event={subEvent}
+									currentUserId={userId}
+									user={user}
+									likedEvent={subEventLikedEvent}
+								/>
+							);
+						})}
 					</div>
 				</div>
 			)}
@@ -150,6 +159,7 @@ const Page = async ({ params }: Props) => {
 						currentUserId={userId}
 						emptyTitle="No Related Events Found"
 						emptyStateSubtext="Check out other events below"
+						user={user}
 					/>
 				</div>
 			)}

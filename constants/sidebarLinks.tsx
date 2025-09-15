@@ -3,6 +3,7 @@ import { CgProfile } from "react-icons/cg";
 import { FaRegHeart } from "react-icons/fa";
 import { TfiTicket } from "react-icons/tfi";
 import { IoLocationOutline } from "react-icons/io5";
+import { MdExplore } from "react-icons/md";
 
 interface SidebarLink {
   image: JSX.Element;
@@ -15,6 +16,11 @@ export const sidebarLinks: SidebarLink[] = [
     image: <HomeIcon />,
     label: "Home",
     path: "/",
+  },
+  {
+    image: <MdExplore />,
+    label: "Explore Events",
+    path: "/explore-events",
   },
   {
     image: <IoLocationOutline />,

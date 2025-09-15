@@ -144,22 +144,22 @@ export default function GPSSettings({
 
   return (
     <Card className={className}>
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <Settings className="h-5 w-5" />
+      <CardHeader className="pb-6">
+        <CardTitle className="flex items-center gap-3 text-xl">
+          <Settings className="h-6 w-6" />
           Prediction Settings
         </CardTitle>
-        <CardDescription>
-          Configure how location predictions are made using GPS and AI
+        <CardDescription className="text-base mt-2">
+          Configure how location predictions are made using GPS and AI technology
         </CardDescription>
       </CardHeader>
       
-      <CardContent className="space-y-6">
+      <CardContent className="space-y-8">
         {/* GPS Permission Status */}
-        <div className="flex items-center justify-between p-3 bg-muted rounded-lg">
-          <div className="flex items-center gap-2">
+        <div className="flex items-center justify-between p-5 bg-muted/80 rounded-lg border">
+          <div className="flex items-center gap-3">
             {getGPSStatusIcon()}
-            <span className="text-sm font-medium">{getGPSStatusText()}</span>
+            <span className="font-medium">{getGPSStatusText()}</span>
           </div>
           {(gpsPermission.prompt || gpsPermission.denied) && (
             <Button 
@@ -167,6 +167,7 @@ export default function GPSSettings({
               variant="outline" 
               onClick={handleRequestPermission}
               disabled={isCheckingPermission}
+              className="px-4 py-2"
             >
               Enable GPS
             </Button>
@@ -174,19 +175,22 @@ export default function GPSSettings({
         </div>
 
         {/* Prediction Methods */}
-        <div className="space-y-4">
-          <h4 className="text-sm font-medium">Prediction Methods</h4>
+        <div className="space-y-6">
+          <div className="border-b pb-3">
+            <h4 className="font-semibold text-lg">Prediction Methods</h4>
+            <p className="text-sm text-muted-foreground mt-1">Choose which technologies to use for location detection</p>
+          </div>
           
           {/* GPS Toggle */}
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <MapPin className="h-4 w-4 text-blue-500" />
-              <div>
-                <Label htmlFor="gps-toggle" className="text-sm font-medium">
+          <div className="flex items-center justify-between p-4 bg-blue-50 dark:bg-blue-950/30 rounded-lg border border-blue-200 dark:border-blue-800">
+            <div className="flex items-center gap-4">
+              <MapPin className="h-5 w-5 text-blue-500" />
+              <div className="space-y-1">
+                <Label htmlFor="gps-toggle" className="font-medium text-base">
                   GPS Location
                 </Label>
-                <p className="text-xs text-muted-foreground">
-                  Use device GPS for location detection
+                <p className="text-sm text-muted-foreground">
+                  Use device GPS for precise location detection
                 </p>
               </div>
             </div>
@@ -196,7 +200,7 @@ export default function GPSSettings({
               aria-checked={settings.gpsEnabled}
               onClick={() => gpsPermission.granted && handleGPSToggle(!settings.gpsEnabled)}
               onKeyPress={e => { if ((e.key === 'Enter' || e.key === ' ') && gpsPermission.granted) handleGPSToggle(!settings.gpsEnabled); }}
-              className={`px-4 py-2 rounded-full font-semibold cursor-pointer transition-colors shadow-lg select-none ${settings.gpsEnabled ? 'bg-black text-black' : 'bg-gray-300 text-black'} ${!gpsPermission.granted ? 'opacity-50 cursor-not-allowed' : ''}`}
+              className={`px-5 py-2.5 rounded-full font-semibold cursor-pointer transition-colors shadow-sm select-none ${settings.gpsEnabled ? 'bg-blue-600 text-white' : 'bg-gray-300 text-gray-700'} ${!gpsPermission.granted ? 'opacity-50 cursor-not-allowed' : ''}`}
               id="gps-toggle"
             >
               {settings.gpsEnabled ? 'Enabled' : 'Disabled'}
@@ -204,15 +208,15 @@ export default function GPSSettings({
           </div>
 
           {/* AI Toggle */}
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <Camera className="h-4 w-4 text-green-500" />
-              <div>
-                <Label htmlFor="ai-toggle" className="text-sm font-medium">
+          <div className="flex items-center justify-between p-4 bg-green-50 dark:bg-green-950/30 rounded-lg border border-green-200 dark:border-green-800">
+            <div className="flex items-center gap-4">
+              <Camera className="h-5 w-5 text-green-500" />
+              <div className="space-y-1">
+                <Label htmlFor="ai-toggle" className="font-medium text-base">
                   AI Vision
                 </Label>
-                <p className="text-xs text-muted-foreground">
-                  Use camera and AI for location detection
+                <p className="text-sm text-muted-foreground">
+                  Use camera and AI for intelligent location detection
                 </p>
               </div>
             </div>
@@ -221,7 +225,7 @@ export default function GPSSettings({
               tabIndex={0}
               onClick={() => handleAIToggle(!settings.aiEnabled)}
               onKeyPress={e => { if (e.key === 'Enter' || e.key === ' ') handleAIToggle(!settings.aiEnabled); }}
-              className={`px-4 py-2 rounded-full font-semibold cursor-pointer transition-colors shadow-lg select-none ${settings.aiEnabled ? 'bg-black text-black' : 'bg-gray-300 text-black'}`}
+              className={`px-5 py-2.5 rounded-full font-semibold cursor-pointer transition-colors shadow-sm select-none ${settings.aiEnabled ? 'bg-green-600 text-white' : 'bg-gray-300 text-gray-700'}`}
               id="ai-toggle"
             >
               {settings.aiEnabled ? 'Enabled' : 'Disabled'}
@@ -232,15 +236,18 @@ export default function GPSSettings({
         {/* Weight Configuration */}
         {bothEnabled && (
           <>
-            <Separator />
-            <div className="space-y-4">
+            <Separator className="my-6" />
+            <div className="space-y-6">
               <div className="flex items-center justify-between">
-                <h4 className="text-sm font-medium">Prediction Weights</h4>
-                <div className="flex gap-2">
-                  <Badge variant="outline" className="text-xs">
+                <div>
+                  <h4 className="font-semibold text-lg">Prediction Weights</h4>
+                  <p className="text-sm text-muted-foreground mt-1">Adjust the balance between GPS and AI predictions</p>
+                </div>
+                <div className="flex gap-3">
+                  <Badge variant="outline" className="px-3 py-1 font-medium">
                     GPS: {settings.gpsWeight}%
                   </Badge>
-                  <Badge variant="outline" className="text-xs">
+                  <Badge variant="outline" className="px-3 py-1 font-medium">
                     AI: {settings.aiWeight}%
                   </Badge>
                 </div>

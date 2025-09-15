@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useSearchParams } from 'next/navigation';
 import dynamic from 'next/dynamic';
 import { Button } from '@/c-components/ui/button';
 import {
@@ -41,6 +42,9 @@ interface PredictionSettings {
 }
 
 export default function LocationDetection() {
+  const searchParams = useSearchParams();
+  const destinationParam = searchParams.get('destination');
+
   const [locationState, setLocationState] = useState<LocationState>('detection');
   const [currentLocation, setCurrentLocation] = useState<string | null>(null);
   const [destinationLocation, setDestinationLocation] = useState<string | null>(null);
@@ -64,6 +68,15 @@ export default function LocationDetection() {
 
   const { toast } = useToast();
   const gpsService = getGPSService();
+
+  // Handle deep linking from ticket navigation
+  useEffect(() => {
+    if (destinationParam && campusLocations.some(loc => loc.name === destinationParam)) {
+      setDestinationLocation(destinationParam);
+      // If we have a destination from deep linking, we still need to detect current location
+      // but we'll skip the destination selection step
+    }
+  }, [destinationParam]);
 
   // GPS location monitoring
   useEffect(() => {
@@ -133,7 +146,12 @@ export default function LocationDetection() {
       });
     }
 
-    setLocationState('destination');
+    // If we have a destination from deep linking, skip to navigation
+    if (destinationParam && campusLocations.some(loc => loc.name === destinationParam)) {
+      setLocationState('navigation');
+    } else {
+      setLocationState('destination');
+    }
   };
 
   // Send image to backend for prediction with optional GPS data
@@ -214,7 +232,12 @@ export default function LocationDetection() {
     if (prediction) {
       setCurrentLocation(prediction.predicted_class);
       setDetectionConfidence(prediction.confidence);
-      setLocationState('destination');
+      // If we have a destination from deep linking, skip to navigation
+      if (destinationParam && campusLocations.some(loc => loc.name === destinationParam)) {
+        setLocationState('navigation');
+      } else {
+        setLocationState('destination');
+      }
 
       toast({
         title: 'Location Detected!',
@@ -227,7 +250,12 @@ export default function LocationDetection() {
   const handleLiveLocationDetected = (location: string, confidence: number) => {
     setCurrentLocation(location);
     setDetectionConfidence(confidence);
-    setLocationState('destination');
+    // If we have a destination from deep linking, skip to navigation
+    if (destinationParam && campusLocations.some(loc => loc.name === destinationParam)) {
+      setLocationState('navigation');
+    } else {
+      setLocationState('destination');
+    }
 
     toast({
       title: 'Location Detected!',
@@ -332,41 +360,49 @@ export default function LocationDetection() {
   };
 
   return (
-    <section id="location-detection" className="py-16 container">
-      <div className="max-w-4xl mx-auto">
-        <h2 className="text-3xl font-bold tracking-tight text-center mb-8">
-          Find Your Way Around Campus
-        </h2>
+    <section id="location-detection" className="py-20 px-6 container">
+      <div className="max-w-5xl mx-auto space-y-12">
+        <div className="text-center space-y-4">
+          <h2 className="text-4xl font-bold tracking-tight">
+            Find Your Way Around Campus
+          </h2>
+          <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+            Use advanced AI and GPS technology to navigate around campus with ease
+          </p>
+        </div>
 
-        <Card className="w-full">
-          <CardHeader>
-            <div className="flex justify-between items-center">
-              <CardTitle>Campus Navigation</CardTitle>
-              <div className="flex gap-2">
+        <Card className="w-full shadow-lg border-2">
+          <CardHeader className="pb-8">
+            <div className="flex justify-between items-start gap-4">
+              <div className="space-y-2">
+                <CardTitle className="text-2xl">Campus Navigation</CardTitle>
+                <CardDescription className="text-base leading-relaxed">
+                  {locationState === 'detection' && (destinationParam ? `Navigating to ${destinationParam} - First, detect your current location` : "Choose your preferred method to detect your current location")}
+                  {locationState === 'destination' && "Select where you want to go"}
+                  {locationState === 'navigation' && (destinationParam ? `Navigating to ${destinationParam} from your ticket` : "Follow the route to your destination")}
+                </CardDescription>
+              </div>
+              <div className="flex gap-3 shrink-0">
                 <Button
                   variant="outline"
                   size="sm"
                   onClick={() => setShowSettings(!showSettings)}
+                  className="h-9"
                 >
                   <Settings className="h-4 w-4 mr-2" />
                   Settings
                 </Button>
-                <Button variant="outline" onClick={resetProcess}>
+                <Button variant="outline" onClick={resetProcess} className="h-9">
                   Start Over
                 </Button>
               </div>
             </div>
-            <CardDescription>
-              {locationState === 'detection' && "Choose your preferred method to detect your current location"}
-              {locationState === 'destination' && "Select where you want to go"}
-              {locationState === 'navigation' && "Follow the route to your destination"}
-            </CardDescription>
           </CardHeader>
 
-          <CardContent>
+          <CardContent className="pt-6 pb-8 space-y-8">
             {/* Settings Panel */}
             {showSettings && (
-              <div className="mb-6">
+              <div className="p-6 bg-muted/50 rounded-lg border">
                 <GPSSettings
                   settings={predictionSettings}
                   onSettingsChange={handleSettingsChange}
@@ -377,55 +413,53 @@ export default function LocationDetection() {
 
             {/* GPS Status Display - always show when GPS enabled, even if not granted yet */}
             {predictionSettings.gpsEnabled && (
-              <div className="mb-6">
-                <div className="p-4 bg-blue-50 dark:bg-blue-950 rounded-lg border border-blue-200 dark:border-blue-800">
-                  <h4 className="font-medium text-blue-900 dark:text-blue-100 mb-2">GPS Status</h4>
-                  {currentGPSLocation ? (
-                    <div className="text-sm text-blue-700 dark:text-blue-300 space-y-1">
-                      <p>Coordinates: {currentGPSLocation.coordinates.latitude.toFixed(6)}, {currentGPSLocation.coordinates.longitude.toFixed(6)}</p>
-                      {currentGPSLocation.bestMatch && (
-                        <p>Nearest: {currentGPSLocation.bestMatch.name} ({Math.round(currentGPSLocation.bestMatch.distance)}m away)</p>
-                      )}
-                      <p>On Campus: {currentGPSLocation.isOnCampus ? 'Yes' : 'No'}</p>
-                    </div>
-                  ) : (
-                    <div className="flex items-center gap-2 text-blue-700 dark:text-blue-300">
-                      <span className="inline-block w-3 h-3 rounded-full bg-blue-400" />
-                      <span>GPS access granted. Waiting for location...</span>
-                    </div>
-                  )}
-                </div>
+              <div className="p-6 bg-blue-50 dark:bg-blue-950/50 rounded-lg border-2 border-blue-200 dark:border-blue-800">
+                <h4 className="font-semibold text-blue-900 dark:text-blue-100 mb-4 text-lg">GPS Status</h4>
+                {currentGPSLocation ? (
+                  <div className="text-sm text-blue-700 dark:text-blue-300 space-y-3">
+                    <p className="font-medium">Coordinates: {currentGPSLocation.coordinates.latitude.toFixed(6)}, {currentGPSLocation.coordinates.longitude.toFixed(6)}</p>
+                    {currentGPSLocation.bestMatch && (
+                      <p className="font-medium">Nearest: {currentGPSLocation.bestMatch.name} ({Math.round(currentGPSLocation.bestMatch.distance)}m away)</p>
+                    )}
+                    <p className="font-medium">On Campus: <span className={currentGPSLocation.isOnCampus ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}>{currentGPSLocation.isOnCampus ? 'Yes' : 'No'}</span></p>
+                  </div>
+                ) : (
+                  <div className="flex items-center gap-3 text-blue-700 dark:text-blue-300">
+                    <span className="inline-block w-3 h-3 rounded-full bg-blue-400 animate-pulse" />
+                    <span className="font-medium">GPS access granted. Waiting for location...</span>
+                  </div>
+                )}
               </div>
             )}
 
             {locationState === 'detection' && (
-              <div className="space-y-6">
-                <Tabs value={detectionMethod} onValueChange={handleValueChange}>
-                  <TabsList className="grid w-full grid-cols-2">
-                    <TabsTrigger value="upload" className="flex items-center gap-2">
+              <div className="space-y-8">
+                <Tabs value={detectionMethod} onValueChange={handleValueChange} className="space-y-6">
+                  <TabsList className="grid w-full grid-cols-2 h-12 p-1 bg-muted/80 border">
+                    <TabsTrigger value="upload" className="flex items-center gap-2 h-10 text-sm font-medium data-[state=active]:bg-background data-[state=active]:shadow-sm">
                       <Upload className="h-4 w-4" />
                       Upload Image
                     </TabsTrigger>
-                    <TabsTrigger value="live" className="flex items-center gap-2">
+                    <TabsTrigger value="live" className="flex items-center gap-2 h-10 text-sm font-medium data-[state=active]:bg-background data-[state=active]:shadow-sm">
                       <Video className="h-4 w-4" />
                       Live Detection
                     </TabsTrigger>
                   </TabsList>
 
-                  <TabsContent value="upload" className="space-y-4">
-                    <div className="text-center space-y-2">
-                      <h3 className="text-lg font-medium">Upload an Image</h3>
-                      <p className="text-sm text-muted-foreground">
+                  <TabsContent value="upload" className="mt-8 space-y-6 p-6 bg-muted/30 rounded-lg border">
+                    <div className="text-center space-y-3">
+                      <h3 className="text-xl font-semibold">Upload an Image</h3>
+                      <p className="text-base text-muted-foreground max-w-md mx-auto">
                         Select or drag an image of your surroundings, or take a photo to detect your location
                       </p>
                     </div>
                     <ImageUploader onImageUpload={handleImageUpload} />
                   </TabsContent>
 
-                  <TabsContent value="live" className="space-y-4">
-                    <div className="text-center space-y-2 mb-4">
-                      <h3 className="text-lg font-medium">Live Detection</h3>
-                      <p className="text-sm text-muted-foreground">
+                  <TabsContent value="live" className="mt-8 space-y-6 p-6 bg-muted/30 rounded-lg border">
+                    <div className="text-center space-y-3">
+                      <h3 className="text-xl font-semibold">Live Detection</h3>
+                      <p className="text-base text-muted-foreground max-w-md mx-auto">
                         Real-time location detection using your camera feed
                       </p>
                     </div>
@@ -438,43 +472,47 @@ export default function LocationDetection() {
             )}
 
             {locationState === 'destination' && (
-              <div className="space-y-6">
-                <div className="p-4 bg-muted rounded-lg mb-6">
-                  <h3 className="font-medium mb-2">Your Current Location:</h3>
-                  <p className="text-xl font-bold">{currentLocation}</p>
-                  <div className="mt-2 text-sm text-muted-foreground">
-                    Detection Confidence: {Math.round(detectionConfidence * 100)}%
+              <div className="space-y-8">
+                <div className="p-6 bg-green-50 dark:bg-green-950/50 rounded-lg border-2 border-green-200 dark:border-green-800">
+                  <h3 className="font-semibold mb-4 text-lg text-green-900 dark:text-green-100">Your Current Location</h3>
+                  <p className="text-2xl font-bold text-green-900 dark:text-green-100 mb-3">{currentLocation}</p>
+                  <div className="flex items-center gap-2 text-sm text-green-700 dark:text-green-300 mb-4">
+                    <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                    <span className="font-medium">Detection Confidence: {Math.round(detectionConfidence * 100)}%</span>
                   </div>
 
                   {/* Hybrid Prediction Details */}
                   {hybridResult && (
-                    <div className="mt-4 p-3 bg-background rounded border">
-                      <h4 className="text-sm font-medium mb-2">Prediction Details</h4>
-                      <div className="text-xs space-y-1">
-                        <p>Method: {hybridResult.method}</p>
+                    <div className="mt-6 p-4 bg-background rounded-lg border space-y-3">
+                      <h4 className="text-base font-semibold mb-3">Prediction Details</h4>
+                      <div className="text-sm space-y-2">
+                        <p><span className="font-medium">Method:</span> {hybridResult.method}</p>
                         {hybridResult.method === 'hybrid' && (
                           <>
-                            <p>GPS Contribution: {Math.round(hybridResult.gpsContribution)}%</p>
-                            <p>AI Contribution: {Math.round(hybridResult.aiContribution)}%</p>
+                            <p><span className="font-medium">GPS Contribution:</span> {Math.round(hybridResult.gpsContribution)}%</p>
+                            <p><span className="font-medium">AI Contribution:</span> {Math.round(hybridResult.aiContribution)}%</p>
                           </>
                         )}
                         {hybridResult.gpsData && (
-                          <p>GPS Distance: {Math.round(hybridResult.gpsData.distance)}m</p>
+                          <p><span className="font-medium">GPS Distance:</span> {Math.round(hybridResult.gpsData.distance)}m</p>
                         )}
                       </div>
                     </div>
                   )}
 
                   {uploadedImage && (
-                    <img
-                      src={uploadedImage}
-                      alt="Captured location"
-                      className="mt-4 max-h-[200px] rounded-md object-contain"
-                    />
+                    <div className="mt-6 p-4 bg-background rounded-lg border">
+                      <h4 className="text-base font-semibold mb-3">Captured Image</h4>
+                      <img
+                        src={uploadedImage}
+                        alt="Captured location"
+                        className="max-h-[200px] rounded-md object-contain mx-auto border"
+                      />
+                    </div>
                   )}
                 </div>
 
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                   <LocationSelector
                     locations={campusLocations.map(loc => loc.name)}
                     currentLocation={currentLocation || ''}
@@ -491,31 +529,40 @@ export default function LocationDetection() {
             )}
 
             {locationState === 'navigation' && currentLocation && destinationLocation && (
-              <div className="space-y-6">
-                <div className="flex justify-between items-start mb-4">
-                  <div className="flex-1">
-                    <h3 className="font-medium">From:</h3>
-                    <p className="font-bold">{currentLocation}</p>
-                  </div>
-                  <div className="flex-1 text-right">
-                    <h3 className="font-medium">To:</h3>
-                    <p className="font-bold">{destinationLocation}</p>
+              <div className="space-y-8">
+                <div className="p-6 bg-blue-50 dark:bg-blue-950/50 rounded-lg border-2 border-blue-200 dark:border-blue-800">
+                  <h3 className="text-lg font-semibold mb-6 text-blue-900 dark:text-blue-100">Navigation Route</h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="space-y-2">
+                      <h4 className="font-medium text-blue-700 dark:text-blue-300">Starting Point</h4>
+                      <p className="text-xl font-bold text-blue-900 dark:text-blue-100">{currentLocation}</p>
+                    </div>
+                    <div className="space-y-2">
+                      <h4 className="font-medium text-blue-700 dark:text-blue-300">Destination</h4>
+                      <p className="text-xl font-bold text-blue-900 dark:text-blue-100">{destinationLocation}</p>
+                    </div>
                   </div>
                 </div>
 
-                <div className="h-[400px] w-full rounded-lg overflow-hidden border">
-                  <NavigationMap
-                    startLocation={currentLocation}
-                    endLocation={destinationLocation}
-                  />
+                <div className="p-4 bg-background rounded-lg border-2 shadow-sm">
+                  <div className="h-[500px] w-full rounded-lg overflow-hidden border">
+                    <NavigationMap
+                      startLocation={currentLocation}
+                      endLocation={destinationLocation}
+                    />
+                  </div>
                 </div>
               </div>
             )}
           </CardContent>
 
-          <CardFooter className="flex justify-end">
+          <CardFooter className="pt-8 pb-6 flex justify-end border-t bg-muted/30">
             {locationState === 'destination' && (
-              <Button onClick={handleProceedToNavigation}>
+              <Button
+                onClick={handleProceedToNavigation}
+                size="lg"
+                className="px-8 py-3 text-base font-semibold"
+              >
                 Get Directions
               </Button>
             )}
@@ -529,8 +576,11 @@ export default function LocationDetection() {
           onCapture={handleCameraCapture}
         />
       </div>
-	  <CampusLocationsSection />
+
+      <div className="mt-16 pt-8 border-t">
+        <CampusLocationsSection />
+      </div>
     </section>
-	
+
   );
 }

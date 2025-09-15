@@ -19,7 +19,7 @@ export default function PredictionBreakdown({ hybridResult, className }: Predict
       case 'ai-only':
         return <Camera className="h-4 w-4 text-green-500" />;
       case 'hybrid':
-        return <Zap className="h-4 w-4 text-purple-500" />;
+        return <Zap className="h-4 w-4 text-red-500" />;
       default:
         return null;
     }
@@ -32,7 +32,7 @@ export default function PredictionBreakdown({ hybridResult, className }: Predict
       case 'ai-only':
         return 'bg-green-500';
       case 'hybrid':
-        return 'bg-purple-500';
+        return 'bg-red-500';
       default:
         return 'bg-gray-500';
     }
@@ -49,7 +49,7 @@ export default function PredictionBreakdown({ hybridResult, className }: Predict
           </Badge>
         </CardTitle>
       </CardHeader>
-      
+
       <CardContent className="space-y-4">
         {/* Final Result */}
         <div className="p-3 bg-muted rounded-lg">
@@ -61,8 +61,8 @@ export default function PredictionBreakdown({ hybridResult, className }: Predict
             <span className="text-sm text-muted-foreground">Overall Confidence</span>
             <span className="text-sm font-medium">{Math.round(hybridResult.finalConfidence * 100)}%</span>
           </div>
-          <Progress 
-            value={hybridResult.finalConfidence * 100} 
+          <Progress
+            value={hybridResult.finalConfidence * 100}
             className="mt-2 h-2"
           />
         </div>
@@ -71,7 +71,7 @@ export default function PredictionBreakdown({ hybridResult, className }: Predict
         {hybridResult.method === 'hybrid' && (
           <div className="space-y-3">
             <h4 className="text-sm font-medium">Contribution Breakdown</h4>
-            
+
             {/* GPS Contribution */}
             {hybridResult.gpsData && (
               <div className="space-y-2">
@@ -82,8 +82,8 @@ export default function PredictionBreakdown({ hybridResult, className }: Predict
                   </div>
                   <span className="text-sm font-medium">{Math.round(hybridResult.gpsContribution)}%</span>
                 </div>
-                <Progress 
-                  value={hybridResult.gpsContribution} 
+                <Progress
+                  value={hybridResult.gpsContribution}
                   className="h-1.5"
                 />
                 <div className="text-xs text-muted-foreground ml-5">
@@ -104,8 +104,8 @@ export default function PredictionBreakdown({ hybridResult, className }: Predict
                   </div>
                   <span className="text-sm font-medium">{Math.round(hybridResult.aiContribution)}%</span>
                 </div>
-                <Progress 
-                  value={hybridResult.aiContribution} 
+                <Progress
+                  value={hybridResult.aiContribution}
                   className="h-1.5"
                 />
                 <div className="text-xs text-muted-foreground ml-5">

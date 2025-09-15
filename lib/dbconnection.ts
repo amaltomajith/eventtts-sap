@@ -1,24 +1,24 @@
-import mongoose from "mongoose";
+import mongoose from 'mongoose';
 
 let isConnected = false;
 
 export const connectToDatabase = async () => {
 	if (!process.env.MONGODB_URI) {
-		throw new Error("Missing MONGODB_URI environment variable");
+		throw new Error('Missing MONGODB_URI environment variable');
 	}
 
 	if (isConnected) {
-		console.log("Using existing database connection");
+		console.log('Using existing database connection');
 		return;
 	}
 
 	try {
-		await mongoose.connect(process.env.MONGODB_URI, { dbName: "test" });
+		await mongoose.connect(process.env.MONGODB_URI, { dbName: 'test' });
 
 		isConnected = true;
 
-		console.log("Connected to database");
+		console.log('Connected to database');
 	} catch (error: any) {
-		throw new Error("Unable to connect to database", error);
+		throw new Error('Unable to connect to database', error);
 	}
 };

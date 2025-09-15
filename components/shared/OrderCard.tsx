@@ -1,9 +1,11 @@
 import Image from "next/image";
 import React from "react";
 import { Badge } from "../ui/badge";
+import { Button } from "../ui/button";
 import { dateConverter, timeFormatConverter } from "@/lib/utils";
 import Link from "next/link";
 import LikeCartButton from "./LikeCartButton";
+import { Navigation } from "lucide-react";
 
 interface Props {
   event: any;
@@ -37,8 +39,8 @@ const OrderCard = ({ event }: Props) => {
             <p className="text-sm">
               {new Date(event.event.endDate) > new Date(event.event.startDate)
                 ? `${dateConverter(event.event.startDate)} - ${dateConverter(
-                    event.event.endDate
-                  )} `
+                  event.event.endDate
+                )} `
                 : `${dateConverter(event.event.startDate)}`}
             </p>
             &nbsp;
@@ -54,6 +56,18 @@ const OrderCard = ({ event }: Props) => {
         variant={"secondary"}
         className="m-1 w-fit"
       >{`${event.event.organizer.firstName} ${event.event.organizer.lastName}`}</Badge>
+
+      {/* Navigate Button - only show if event has campus location */}
+      {event.event.campusLocation && (
+        <div className="p-2 pt-0">
+          <Button asChild className="w-full bg-blue-600 hover:bg-blue-700 text-white">
+            <Link href={`/track?destination=${encodeURIComponent(event.event.campusLocation)}`}>
+              <Navigation className="w-4 h-4 mr-2" />
+              Navigate
+            </Link>
+          </Button>
+        </div>
+      )}
     </div>
   );
 };

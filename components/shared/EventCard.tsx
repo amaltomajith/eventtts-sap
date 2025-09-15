@@ -13,40 +13,37 @@ interface Props {
   event: IEvent;
   currentUserId: string | null;
   page?: string;
+  user?: any; // The pre-fetched user data
+  likedEvent?: boolean; // Whether this event is liked by the current user
 }
 
-const EventCard = async ({ event, currentUserId, page }: Props) => {
-  let user = null;
-  let likedEvent = false;
-
-  if (currentUserId) {
-    user = await getUserByClerkId(currentUserId);
-    if (user?.likedEvents) {
-      likedEvent = user.likedEvents.includes(event._id);
-    }
-  }
-
+const EventCard = ({ event, currentUserId, page, user, likedEvent = false }: Props) => {
   // Check if current user is the organizer of this event
   const isOrganizer = user && event.organizer._id === user._id;
 
   return (
-    <div className="border h-96 w-96 rounded-md flex flex-col hover:scale-95 transition-all shadow-md relative">
-      <Link href={`/event/${event._id}`} className="w-full h-1/2 relative">
+    <div className="group border-0 h-96 w-full max-w-sm rounded-lg flex flex-col hover:shadow-lg shadow-md relative bg-white overflow-hidden">
+      {/* Image Container */}
+      <Link href={`/event/${event._id}`} className="w-full h-1/2 relative overflow-hidden">
         {event.photo ? (
           <Image
             src={event.photo}
             alt={event.title || "Event image"}
-            width={1920}
-            height={1280}
-            className="w-full h-full rounded-t-md object-cover hover:opacity-80 transition-all"
+            width={400}
+            height={200}
+            loading="lazy"
+            className="w-full h-full rounded-t-lg object-cover"
           />
         ) : (
-          <div className="w-full h-full bg-gray-200 flex items-center justify-center rounded-t-md">
-            <span className="text-gray-500">No image available</span>
+          <div className="w-full h-full bg-gray-100 flex items-center justify-center rounded-t-lg">
+            <span className="text-gray-500 font-medium">No image available</span>
           </div>
         )}
+
+
+
         {event.soldOut && (
-          <div className="absolute top-2 right-2 bg-red-500 text-white text-xs px-2 py-1 rounded-md">
+          <div className="absolute top-3 right-3 bg-red-500 text-white text-xs px-3 py-1 rounded-full font-medium shadow-lg">
             Sold Out
           </div>
         )}
@@ -63,11 +60,11 @@ const EventCard = async ({ event, currentUserId, page }: Props) => {
 
       {/* Edit and AI Report buttons for organizer */}
       {isOrganizer && (
-        <div className="absolute top-2 right-2 flex flex-col gap-2">
-          <Button asChild size="sm" className="bg-green-600">
+        <div className="absolute top-3 left-3 flex flex-col gap-2 opacity-0 group-hover:opacity-100">
+          <Button asChild size="sm" className="bg-green-600 hover:bg-green-700">
             <Link href={`/event/${event._id}/update`}>Edit</Link>
           </Button>
-          <Button asChild size="sm" className="bg-blue-600">
+          <Button asChild size="sm" className="bg-blue-600 hover:bg-blue-700">
             <Link href={`/event/${event._id}/report`}>AI Report</Link>
           </Button>
         </div>
@@ -75,7 +72,7 @@ const EventCard = async ({ event, currentUserId, page }: Props) => {
 
       <Link
         href={`/event/${event._id}`}
-        className="p-2 flex flex-col items-start gap-1 flex-1 font-medium"
+        className="p-4 flex flex-col items-start gap-3 flex-1 font-medium hover:bg-gray-50"
       >
         <div className="w-full flex flex-wrap gap-2 justify-start items-center">
           <Badge variant="default">

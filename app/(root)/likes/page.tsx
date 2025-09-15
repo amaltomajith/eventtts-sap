@@ -29,6 +29,8 @@ const Page = async () => {
 								key={event._id}
 								event={event}
 								currentUserId={userId}
+								user={user}
+								likedEvent={true} // All events in likes page are liked by definition
 							/>
 						);
 					})
