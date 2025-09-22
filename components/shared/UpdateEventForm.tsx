@@ -25,7 +25,7 @@ import { useUploadThing } from "@/lib/uploadthing";
 
 const formSchema = z.object({
 	title: z.string().trim().min(2, { message: "Title must be at least 2 characters." }),
-    category: z.string(),
+	category: z.string(),
 	tags: z.array(z.string().min(2, { message: "Tag must be at least 2 characters." })).min(1, { message: "At least one tag is required." }),
 	description: z.string().trim().min(2, { message: "Description must be at least 2 characters." }),
 	photo: z.string(),
@@ -57,14 +57,14 @@ const UpdateEventForm = ({ userId, event, eventId }: Props) => {
 
 	const [isSubmitting, setIsSubmitting] = useState(false);
 	const [files, setFiles] = useState<File[]>([]);
-	
+
 	const form = useForm<z.infer<typeof formSchema>>({
 		resolver: zodResolver(formSchema),
 		defaultValues: {
-            ...event,
-            startDate: new Date(event.startDate),
-            endDate: new Date(event.endDate),
-        },
+			...event,
+			startDate: new Date(event.startDate),
+			endDate: new Date(event.endDate),
+		},
 	});
 
 	async function onSubmit(values: z.infer<typeof formSchema>) {
@@ -77,18 +77,18 @@ const UpdateEventForm = ({ userId, event, eventId }: Props) => {
 				if (!uploadedImages) throw new Error("Image upload failed.");
 				uploadedImageUrl = uploadedImages[0].url;
 			}
-			
-            const updatedEvent = await updateEvent({
-                userId,
-                event: { ...values, photo: uploadedImageUrl, _id: eventId },
-                path: `/event/${eventId}`
-            });
 
-            if (updatedEvent) {
-                form.reset();
-                router.push(`/event/${updatedEvent._id}`);
-                toast({ title: "Success!", description: "Event updated successfully." });
-            }
+			const updatedEvent = await updateEvent({
+				userId,
+				event: { ...values, photo: uploadedImageUrl, _id: eventId },
+				path: `/event/${eventId}`
+			});
+
+			if (updatedEvent) {
+				form.reset();
+				router.push(`/event/${updatedEvent._id}`);
+				toast({ title: "Success!", description: "Event updated successfully." });
+			}
 		} catch (error: any) {
 			toast({ variant: "destructive", title: "Something went wrong.", description: error.message });
 		} finally {
@@ -96,7 +96,7 @@ const UpdateEventForm = ({ userId, event, eventId }: Props) => {
 		}
 	}
 
-    const handleKeyDown = (e: React.KeyboardEvent, field: any) => {
+	const handleKeyDown = (e: React.KeyboardEvent, field: any) => {
 		if ((e.key === "Enter" || e.key === ",") && field.name === "tags") {
 			e.preventDefault();
 			const tagInput = e.target as HTMLInputElement;
@@ -124,9 +124,9 @@ const UpdateEventForm = ({ userId, event, eventId }: Props) => {
 			<form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8 p-10 max-sm:p-4">
 				{/* The form fields will now be pre-populated from the event data */}
 				{/* --- PASTE ALL YOUR ORIGINAL <FormField> COMPONENTS HERE --- */}
-                {/* Example of one field: */}
-                <FormField control={form.control} name="title" render={({ field }) => (<FormItem className="w-full"><FormLabel>Title <span className="text-red-700">*</span></FormLabel><FormControl><Input placeholder="Event title..." {...field} /></FormControl><FormMessage /></FormItem>)} />
-                {/* ... Paste the rest of your form fields from your original EventForm.tsx here */}
+				{/* Example of one field: */}
+				<FormField control={form.control} name="title" render={({ field }) => (<FormItem className="w-full"><FormLabel>Title <span className="text-red-700">*</span></FormLabel><FormControl><Input placeholder="Event title..." {...field} /></FormControl><FormMessage /></FormItem>)} />
+				{/* ... Paste the rest of your form fields from your original EventForm.tsx here */}
 				<div className="flex justify-center items-center">
 					<Button type="submit" disabled={isSubmitting}>
 						{isSubmitting ? "Updating..." : "Update Event"}

@@ -44,12 +44,12 @@ type ReportFormProps = {
 
 // Define the structure for the AI's JSON response
 interface PdfSection {
-    heading: string;
-    content: string[];
+  heading: string;
+  content: string[];
 }
 interface PdfJsonObject {
-    title: string;
-    sections: PdfSection[];
+  title: string;
+  sections: PdfSection[];
 }
 
 const ReportForm = ({ eventId, userId, event }: ReportFormProps) => {
@@ -101,21 +101,21 @@ const ReportForm = ({ eventId, userId, event }: ReportFormProps) => {
       y += 15;
 
       pdfData.sections.forEach(section => {
-          if (y > 270) { doc.addPage(); y = 20; }
-          doc.setFontSize(16);
-          doc.setFont("helvetica", "bold");
-          doc.text(section.heading, 15, y);
-          y += 8;
+        if (y > 270) { doc.addPage(); y = 20; }
+        doc.setFontSize(16);
+        doc.setFont("helvetica", "bold");
+        doc.text(section.heading, 15, y);
+        y += 8;
 
-          doc.setFontSize(12);
-          doc.setFont("helvetica", "normal");
-          section.content.forEach(line => {
-              if (y > 280) { doc.addPage(); y = 20; }
-              const splitLines = doc.splitTextToSize(line, 180);
-              doc.text(splitLines, 15, y);
-              y += (splitLines.length * 5) + 3;
-          });
-          y += 5;
+        doc.setFontSize(12);
+        doc.setFont("helvetica", "normal");
+        section.content.forEach(line => {
+          if (y > 280) { doc.addPage(); y = 20; }
+          const splitLines = doc.splitTextToSize(line, 180);
+          doc.text(splitLines, 15, y);
+          y += (splitLines.length * 5) + 3;
+        });
+        y += 5;
       });
 
       // Generate a blob URL to display in the iframe
@@ -146,19 +146,19 @@ const ReportForm = ({ eventId, userId, event }: ReportFormProps) => {
       {/* --- Conditional Rendering: Show PDF or Show Form --- */}
       {pdfUrl ? (
         <div className="flex flex-col items-center gap-6">
-            <h2 className="h2-bold text-center">Your Report is Ready</h2>
-            <div className="w-full h-[700px] border rounded-lg">
-                <iframe src={pdfUrl} width="100%" height="100%" title="PDF Report" />
-            </div>
-            <Button onClick={downloadPdf} size="lg" className="button w-full sm:w-fit">
-                Download PDF
-            </Button>
+          <h2 className="h2-bold text-center">Your Report is Ready</h2>
+          <div className="w-full h-[700px] border rounded-lg">
+            <iframe src={pdfUrl} width="100%" height="100%" title="PDF Report" />
+          </div>
+          <Button onClick={downloadPdf} size="lg" className="button w-full sm:w-fit">
+            Download PDF
+          </Button>
         </div>
       ) : (
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col gap-5">
             {/* The form fields are now visible again */}
-            <div className="flex flex-col gap-5 md:flex-row"> <FormField control={form.control} name="preparedBy" render={({ field }) => ( <FormItem className="w-full"><FormLabel>Prepared By</FormLabel><FormControl><Input placeholder="Your name or team name" {...field} /></FormControl><FormMessage /></FormItem>)} /> </div>
+            <div className="flex flex-col gap-5 md:flex-row"> <FormField control={form.control} name="preparedBy" render={({ field }) => (<FormItem className="w-full"><FormLabel>Prepared By</FormLabel><FormControl><Input placeholder="Your name or team name" {...field} /></FormControl><FormMessage /></FormItem>)} /> </div>
             <FormField control={form.control} name="eventPurpose" render={({ field }) => (<FormItem className="w-full"><FormLabel>Event Purpose</FormLabel><FormControl><Textarea placeholder="Describe the main purpose of the event" {...field} /></FormControl><FormMessage /></FormItem>)} />
             <FormField control={form.control} name="keyHighlights" render={({ field }) => (<FormItem className="w-full"><FormLabel>Key Highlights</FormLabel><FormControl><Textarea placeholder="What were the standout moments?" {...field} /></FormControl><FormMessage /></FormItem>)} />
             <FormField control={form.control} name="majorOutcomes" render={({ field }) => (<FormItem className="w-full"><FormLabel>Major Outcomes</FormLabel><FormControl><Textarea placeholder="What were the major results or outcomes?" {...field} /></FormControl><FormMessage /></FormItem>)} />
@@ -171,11 +171,11 @@ const ReportForm = ({ eventId, userId, event }: ReportFormProps) => {
             <FormField control={form.control} name="vips" render={({ field }) => (<FormItem className="w-full"><FormLabel>VIPs, Speakers, Performers Present</FormLabel><FormControl><Input placeholder="List key people who were present" {...field} /></FormControl><FormMessage /></FormItem>)} />
             <FormField control={form.control} name="keySessions" render={({ field }) => (<FormItem className="w-full"><FormLabel>Key Sessions / Speeches / Workshops</FormLabel><FormControl><Textarea placeholder="Describe the most important sessions" {...field} /></FormControl><FormMessage /></FormItem>)} />
             <div className="flex flex-col gap-5 md:flex-row">
-                <FormField control={form.control} name="budget" render={({ field }) => (<FormItem className="w-full"><FormLabel>Budgeted Cost (INR)</FormLabel><FormControl><Input type="number" placeholder="e.g., 50000" {...field} /></FormControl><FormMessage /></FormItem>)} />
-                <FormField control={form.control} name="actualExpenditure" render={({ field }) => (<FormItem className="w-full"><FormLabel>Actual Expenditure (INR)</FormLabel><FormControl><Input type="number" placeholder="e.g., 45000" {...field} /></FormControl><FormMessage /></FormItem>)} />
-                <FormField control={form.control} name="sponsorship" render={({ field }) => (<FormItem className="w-full"><FormLabel>Sponsorship / Funding (INR)</FormLabel><FormControl><Input type="number" placeholder="e.g., 10000" {...field} /></FormControl><FormMessage /></FormItem>)} />
+              <FormField control={form.control} name="budget" render={({ field }) => (<FormItem className="w-full"><FormLabel>Budgeted Cost (INR)</FormLabel><FormControl><Input type="number" placeholder="e.g., 50000" {...field} /></FormControl><FormMessage /></FormItem>)} />
+              <FormField control={form.control} name="actualExpenditure" render={({ field }) => (<FormItem className="w-full"><FormLabel>Actual Expenditure (INR)</FormLabel><FormControl><Input type="number" placeholder="e.g., 45000" {...field} /></FormControl><FormMessage /></FormItem>)} />
+              <FormField control={form.control} name="sponsorship" render={({ field }) => (<FormItem className="w-full"><FormLabel>Sponsorship / Funding (INR)</FormLabel><FormControl><Input type="number" placeholder="e.g., 10000" {...field} /></FormControl><FormMessage /></FormItem>)} />
             </div>
-            <FormField control={form.control} name="photos" render={({ field }) => ( <FormItem className="w-full"><FormLabel>Link to Photos/Videos</FormLabel><FormControl><FileUploader onFieldChange={field.onChange} imageUrl={field.value || ""} setFiles={setFiles} /></FormControl><FormMessage /></FormItem>)} />
+            <FormField control={form.control} name="photos" render={({ field }) => (<FormItem className="w-full"><FormLabel>Link to Photos/Videos</FormLabel><FormControl><FileUploader onFieldChange={field.onChange} imageUrl={field.value || ""} setFiles={setFiles} /></FormControl><FormMessage /></FormItem>)} />
             <Button type="submit" size="lg" disabled={isGenerating} className="button col-span-2 w-full">
               {isGenerating ? "Generating AI Report..." : "Generate AI Report & View PDF"}
             </Button>

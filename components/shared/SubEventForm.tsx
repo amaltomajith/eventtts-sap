@@ -26,7 +26,7 @@ interface Props {
 const SubEventForm = ({ index }: Props) => {
   const { control, watch, setValue } = useFormContext();
   const [files, setFiles] = useState<File[]>([]);
-    const isOnline = watch(`subEvents.${index}.isOnline`);
+  const isOnline = watch(`subEvents.${index}.isOnline`);
   const isFree = watch(`subEvents.${index}.isFree`);
 
   return (
