@@ -1,7 +1,7 @@
 import Image from "next/image";
 import React from "react";
-import { Badge } from "../ui/badge";
-import { Button } from "../ui/button";
+import { Badge } from "@/c-components/ui/badge";
+import { Button } from "@/c-components/ui/button";
 import { dateConverter, timeFormatConverter } from "@/lib/utils";
 import Link from "next/link";
 import LikeCartButton from "./LikeCartButton";

@@ -6,7 +6,7 @@ import {
   SheetClose,
   SheetContent,
   SheetTrigger,
-} from "@/components/ui/sheet";
+} from "@/c-components/ui/sheet";
 import { GiHamburgerMenu } from "react-icons/gi";
 import { sidebarLinks } from "@/constants/sidebarLinks";
 import Link from "next/link";

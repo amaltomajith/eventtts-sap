@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { Button } from "../ui/button";
+import { Button } from "@/c-components/ui/button";
 import {
   Dialog,
   DialogContent,
@@ -9,8 +9,8 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "@/components/ui/dialog";
-import { toast } from "../ui/use-toast";
+} from "@/c-components/ui/dialog";
+import { toast } from "@/hooks/use-toast";
 import { deleteEventById } from "@/lib/actions/event.action";
 
 const DeleteEventButton = ({ event }: any) => {

@@ -1,11 +1,11 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Button } from '@/c-components/ui/button';
+import { Input } from '@/c-components/ui/input';
+import { Card, CardContent, CardHeader, CardTitle } from '@/c-components/ui/card';
+import { Badge } from '@/c-components/ui/badge';
+import { Avatar, AvatarFallback, AvatarImage } from '@/c-components/ui/avatar';
 import {
   Search,
   Download,

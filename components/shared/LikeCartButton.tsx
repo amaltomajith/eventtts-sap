@@ -3,10 +3,10 @@
 import React, { useEffect, useState } from "react";
 import { FaHeart, FaRegHeart } from "react-icons/fa";
 import { MdOutlineDoNotDisturbOn, MdOutlineShoppingCart } from "react-icons/md";
-import { useToast } from "../ui/use-toast";
+import { useToast } from "@/hooks/use-toast";
 import { likeEvent } from "@/lib/actions/user.action";
 import { getEventById } from "@/lib/actions/event.action";
-import { Button } from "../ui/button";
+import { Button } from "@/c-components/ui/button";
 import { checkoutOrder } from "@/lib/actions/order.action";
 import { IEvent } from "@/lib/models/event.model";
 import type { Types } from "mongoose";
@@ -17,8 +17,8 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "@/components/ui/dialog";
-import { Input } from "../ui/input";
+} from "@/c-components/ui/dialog";
+import { Input } from "@/c-components/ui/input";
 
 // -------------------------------------------------------------
 // Event Type with SubEvent Support

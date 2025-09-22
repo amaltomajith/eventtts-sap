@@ -5,9 +5,9 @@ import { sidebarLinks } from "@/constants/sidebarLinks";
 import Image from "next/image";
 import Link from "next/link";
 import React, { useEffect, useState } from "react";
-import { ModeToggle } from "../ui/ModeToggle";
+import { ModeToggle } from "@/components/ui/ModeToggle";
 import { SignedOut, UserButton } from "@clerk/nextjs";
-import { Button } from "../ui/button";
+import { Button } from "@/c-components/ui/button";
 import MobileNav from "./MobileNav";
 import ClientOnly from "./ClientOnly";
 
