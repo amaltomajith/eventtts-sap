@@ -143,9 +143,12 @@ export default function EventCreatorDashboard({ events }: EventCreatorDashboardP
                       <span className="font-medium">{event.ticketsLeft} tickets remaining</span>
                     )}
                   </div>
-                  <div className="flex gap-3">
+                  <div className="flex gap-2 flex-wrap">
                     <Button asChild size="sm" variant="outline" className="border-red-300 text-red-600 hover:bg-red-50">
                       <Link href={`/event/${event._id}`}>View Event</Link>
+                    </Button>
+                    <Button asChild size="sm" variant="outline" className="border-blue-300 text-blue-600 hover:bg-blue-50">
+                      <Link href={`/event/${event._id}/attendees`}>Attendees</Link>
                     </Button>
                     <Button asChild size="sm" className="bg-red-600 hover:bg-red-700 text-white">
                       <Link href={`/event/${event._id}/update`}>Edit</Link>

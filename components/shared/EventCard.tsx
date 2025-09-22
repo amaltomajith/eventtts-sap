@@ -58,11 +58,14 @@ const EventCard = ({ event, currentUserId, page, user, likedEvent = false }: Pro
         />
       )}
 
-      {/* Edit and AI Report buttons for organizer */}
+      {/* Edit, Attendees, and AI Report buttons for organizer */}
       {isOrganizer && (
         <div className="absolute top-3 left-3 flex flex-col gap-2 opacity-0 group-hover:opacity-100">
           <Button asChild size="sm" className="bg-green-600 hover:bg-green-700">
             <Link href={`/event/${event._id}/update`}>Edit</Link>
+          </Button>
+          <Button asChild size="sm" className="bg-orange-600 hover:bg-orange-700">
+            <Link href={`/event/${event._id}/attendees`}>Attendees</Link>
           </Button>
           <Button asChild size="sm" className="bg-blue-600 hover:bg-blue-700">
             <Link href={`/event/${event._id}/report`}>AI Report</Link>

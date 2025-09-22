@@ -192,4 +192,31 @@ export type CreateReportParams = {
 	};
 };
 
+// ====== ATTENDEE MANAGEMENT TYPES
+export interface IAttendee {
+	_id: string;
+	firstName: string;
+	lastName: string;
+	email: string;
+	photo?: string;
+	registrationDate: Date;
+	totalTickets: number;
+	totalAmount: number;
+	paymentStatus: 'completed' | 'pending' | 'failed';
+	stripeId: string;
+}
+
+export type GetEventAttendeesParams = {
+	eventId: string;
+	organizerId: string;
+	searchString?: string;
+	page?: number;
+	limit?: number;
+};
+
+export type ExportAttendeesParams = {
+	eventId: string;
+	organizerId: string;
+};
+
 // ... other types in your file

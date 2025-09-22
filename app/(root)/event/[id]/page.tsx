@@ -110,6 +110,30 @@ const Page = async ({ params }: Props) => {
 					</Link>
 				)}
 
+				{/* Organizer Controls - Only show if current user is the organizer */}
+				{user && event.organizer._id === user._id && (
+					<div className="bg-gray-50 border border-gray-200 rounded-lg p-4 mt-6">
+						<h3 className="text-lg font-semibold text-gray-800 mb-3">Event Management</h3>
+						<div className="flex flex-wrap gap-3">
+							<Link href={`/event/${event._id}/update`}>
+								<button className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors">
+									Edit Event
+								</button>
+							</Link>
+							<Link href={`/event/${event._id}/attendees`}>
+								<button className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors">
+									Manage Attendees
+								</button>
+							</Link>
+							<Link href={`/event/${event._id}/report`}>
+								<button className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors">
+									Generate Report
+								</button>
+							</Link>
+						</div>
+					</div>
+				)}
+
 				<div className="flex flex-wrap gap-3">
 					{event.tags?.map((tag: any) => {
 						return (
