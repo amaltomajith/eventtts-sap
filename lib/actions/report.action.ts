@@ -34,7 +34,9 @@ export async function generatePdfObject({
 		// Calculate profit/loss
 		const budget = parseFloat(report.budget) || 0;
 		const actualExpenditure = parseFloat(report.actualExpenditure) || 0;
-		const sponsorship = report.sponsorship ? parseFloat(report.sponsorship) || 0 : 0;
+		const sponsorship = report.sponsorship
+			? parseFloat(report.sponsorship) || 0
+			: 0;
 		const totalIncome = stats.totalRevenue + sponsorship;
 		const profitLoss = totalIncome - actualExpenditure;
 
