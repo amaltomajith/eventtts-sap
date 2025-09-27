@@ -23,14 +23,21 @@ import { CalendarDays, MapPin, Users, DollarSign, Clock, Tag } from "lucide-reac
 
 const formSchema = z.object({
   preparedBy: z.string().min(2, "This field is required."),
+  eventPurpose: z.string().min(10, "Please describe the event purpose."),
   keyHighlights: z.string().min(10, "Please provide detailed highlights."),
   majorOutcomes: z.string().min(10, "Please describe the major outcomes."),
+  objective: z.string().min(10, "Please describe the objective."),
+  targetAudience: z.string().min(5, "Please describe the target audience."),
+  eventGoals: z.string().min(10, "Please describe the event goals."),
+  agenda: z.string().min(10, "Please provide the agenda details."),
+  partners: z.string().optional(),
+  budgetAllocation: z.string().min(1, "Please provide budget allocation details."),
+  vips: z.string().optional(),
+  keySessions: z.string().optional(),
   budget: z.string().min(1, "Enter the budget."),
   actualExpenditure: z.string().min(1, "Enter the actual expenditure."),
   sponsorship: z.string().optional(),
   photos: z.string().optional(),
-  sponsorship: z.string().optional(),
-  actualExpenditure: z.string().min(1, "Enter the actual expenditure."),
 });
 
 type ReportFormProps = {
@@ -176,7 +183,7 @@ const ReportForm = ({ eventId, userId, event }: ReportFormProps) => {
                 Category
               </div>
               <Badge variant="secondary" className="text-sm">
-                {event.category?.name || 'N/A'}
+                {(event.category as any)?.name || 'N/A'}
               </Badge>
             </div>
 
@@ -296,6 +303,101 @@ const ReportForm = ({ eventId, userId, event }: ReportFormProps) => {
                   )}
                 />
 
+                {/* Event Purpose */}
+                <FormField
+                  control={form.control}
+                  name="eventPurpose"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-base font-semibold">Event Purpose *</FormLabel>
+                      <FormControl>
+                        <Textarea
+                          placeholder="What was the main purpose or reason for organizing this event?"
+                          className="min-h-[100px] resize-none"
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                {/* Objective */}
+                <FormField
+                  control={form.control}
+                  name="objective"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-base font-semibold">Event Objective *</FormLabel>
+                      <FormControl>
+                        <Textarea
+                          placeholder="What specific objectives were you trying to achieve with this event?"
+                          className="min-h-[100px] resize-none"
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                {/* Target Audience */}
+                <FormField
+                  control={form.control}
+                  name="targetAudience"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-base font-semibold">Target Audience *</FormLabel>
+                      <FormControl>
+                        <Input
+                          placeholder="Who was the intended audience for this event?"
+                          className="h-12"
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                {/* Event Goals */}
+                <FormField
+                  control={form.control}
+                  name="eventGoals"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-base font-semibold">Event Goals *</FormLabel>
+                      <FormControl>
+                        <Textarea
+                          placeholder="What were the specific goals you set for this event?"
+                          className="min-h-[100px] resize-none"
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                {/* Agenda */}
+                <FormField
+                  control={form.control}
+                  name="agenda"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-base font-semibold">Event Agenda *</FormLabel>
+                      <FormControl>
+                        <Textarea
+                          placeholder="Provide a brief overview of the event agenda or schedule..."
+                          className="min-h-[120px] resize-none"
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
                 {/* Key Highlights */}
                 <FormField
                   control={form.control}
@@ -385,6 +487,87 @@ const ReportForm = ({ eventId, userId, event }: ReportFormProps) => {
                             type="number"
                             placeholder="10000"
                             className="h-12"
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+
+                {/* Optional Fields Section */}
+                <div className="space-y-6 p-4 bg-gray-50 rounded-lg">
+                  <h3 className="text-lg font-semibold text-gray-800">Additional Details (Optional)</h3>
+                  
+                  {/* Partners */}
+                  <FormField
+                    control={form.control}
+                    name="partners"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-base font-semibold">Partners & Collaborators</FormLabel>
+                        <FormControl>
+                          <Textarea
+                            placeholder="List any partners, sponsors, or collaborating organizations..."
+                            className="min-h-[80px] resize-none"
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  {/* Budget Allocation */}
+                  <FormField
+                    control={form.control}
+                    name="budgetAllocation"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-base font-semibold">Budget Allocation Details *</FormLabel>
+                        <FormControl>
+                          <Textarea
+                            placeholder="Provide details on how the budget was allocated across different categories..."
+                            className="min-h-[80px] resize-none"
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  {/* VIPs */}
+                  <FormField
+                    control={form.control}
+                    name="vips"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-base font-semibold">VIPs & Special Guests</FormLabel>
+                        <FormControl>
+                          <Textarea
+                            placeholder="List important attendees, keynote speakers, or VIP guests..."
+                            className="min-h-[80px] resize-none"
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  {/* Key Sessions */}
+                  <FormField
+                    control={form.control}
+                    name="keySessions"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-base font-semibold">Key Sessions & Activities</FormLabel>
+                        <FormControl>
+                          <Textarea
+                            placeholder="Highlight the most important sessions, workshops, or activities..."
+                            className="min-h-[80px] resize-none"
                             {...field}
                           />
                         </FormControl>
