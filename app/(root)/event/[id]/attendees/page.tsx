@@ -13,13 +13,13 @@ interface AttendeePageProps {
 
 export default async function AttendeePage({ params }: AttendeePageProps) {
   const { userId: clerkId } = auth();
-  
+
   if (!clerkId) {
     redirect('/sign-in');
   }
 
   const { id: eventId } = await params;
-  
+
   // Get the event and verify ownership
   const event = await getEventById(eventId);
   if (!event) {
@@ -33,7 +33,7 @@ export default async function AttendeePage({ params }: AttendeePageProps) {
   }
 
   // Check if the current user is the organizer of this event
-  if (event.organizer._id !== mongoUser._id) {
+  if (String(event.organizer._id) !== String(mongoUser._id)) {
     redirect(`/event/${eventId}`);
   }
 
@@ -59,7 +59,7 @@ export default async function AttendeePage({ params }: AttendeePageProps) {
 
       {/* Main Content */}
       <div className="max-w-7xl mx-auto px-6 py-8">
-        <AttendeeManagement 
+        <AttendeeManagement
           eventId={eventId}
           organizerId={mongoUser._id}
           eventTitle={event.title}

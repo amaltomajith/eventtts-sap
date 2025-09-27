@@ -26,7 +26,7 @@ const UpdateEventPage = async ({ params }: UpdateEventPageProps) => {
   const event = await getEventById(id);
 
   // Check if the current user is the organizer of this event
-  if (!event || event.organizer._id !== user._id) {
+  if (!event || String(event.organizer._id) !== String(user._id)) {
     redirect("/");
   }
 

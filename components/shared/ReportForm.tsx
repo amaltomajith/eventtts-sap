@@ -10,28 +10,25 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { FileUploader } from "./FileUploader";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useUploadThing } from "@/lib/uploadthing";
 import { IEvent } from "@/lib/models/event.model";
 import { useToast } from "@/hooks/use-toast";
 import { generatePdfObject } from "@/lib/actions/report.action";
+import { getEventStatistics } from "@/lib/actions/order.action";
 import jsPDF from "jspdf";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { CalendarDays, MapPin, Users, DollarSign, Clock, Tag } from "lucide-react";
 
 const formSchema = z.object({
-  preparedBy: z.string().min(3, "This field is required."),
-  eventPurpose: z.string().min(3, "This field is required."),
-  keyHighlights: z.string().min(3, "This field is required."),
-  majorOutcomes: z.string().min(3, "This field is required."),
-  objective: z.string().min(3, "This field is required."),
-  targetAudience: z.string().min(3, "This field is required."),
-  eventGoals: z.string().min(3, "This field is required."),
-  agenda: z.string().min(3, "This field is required."),
-  partners: z.string().optional(),
-  budgetAllocation: z.string().min(3, "This field is required."),
-  vips: z.string().optional(),
-  keySessions: z.string().optional(),
-  photos: z.string().optional(),
+  preparedBy: z.string().min(2, "This field is required."),
+  keyHighlights: z.string().min(10, "Please provide detailed highlights."),
+  majorOutcomes: z.string().min(10, "Please describe the major outcomes."),
   budget: z.string().min(1, "Enter the budget."),
+  actualExpenditure: z.string().min(1, "Enter the actual expenditure."),
+  sponsorship: z.string().optional(),
+  photos: z.string().optional(),
   sponsorship: z.string().optional(),
   actualExpenditure: z.string().min(1, "Enter the actual expenditure."),
 });
@@ -56,6 +53,7 @@ const ReportForm = ({ eventId, userId, event }: ReportFormProps) => {
   const [files, setFiles] = useState<File[]>([]);
   const { startUpload } = useUploadThing("imageUploader");
   const { toast } = useToast();
+  const [eventStats, setEventStats] = useState<any>(null);
 
   // State to manage the UI: show form, or show PDF viewer
   const [pdfUrl, setPdfUrl] = useState<string | null>(null);
@@ -64,12 +62,28 @@ const ReportForm = ({ eventId, userId, event }: ReportFormProps) => {
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      preparedBy: "", eventPurpose: "", keyHighlights: "", majorOutcomes: "",
-      objective: "", targetAudience: "", eventGoals: "", agenda: "",
-      partners: "", budgetAllocation: "", vips: "", keySessions: "",
-      photos: "", budget: "", sponsorship: "", actualExpenditure: ""
+      preparedBy: "",
+      keyHighlights: "",
+      majorOutcomes: "",
+      budget: "",
+      sponsorship: "",
+      actualExpenditure: "",
+      photos: ""
     },
   });
+
+  // Fetch event statistics on component mount
+  useEffect(() => {
+    const fetchEventStats = async () => {
+      try {
+        const stats = await getEventStatistics(eventId);
+        setEventStats(stats);
+      } catch (error) {
+        console.error("Failed to fetch event statistics:", error);
+      }
+    };
+    fetchEventStats();
+  }, [eventId]);
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     setIsGenerating(true);
@@ -142,45 +156,289 @@ const ReportForm = ({ eventId, userId, event }: ReportFormProps) => {
   };
 
   return (
-    <div>
+    <div className="max-w-7xl mx-auto space-y-8">
+      {/* Event Overview Card */}
+      <Card className="border-2 border-primary/20 bg-gradient-to-r from-primary/5 to-primary/10">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2 text-2xl">
+            <CalendarDays className="h-6 w-6 text-primary" />
+            Event Overview
+          </CardTitle>
+          <CardDescription>
+            Automatically populated from your event data
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="space-y-2">
+              <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
+                <Tag className="h-4 w-4" />
+                Category
+              </div>
+              <Badge variant="secondary" className="text-sm">
+                {event.category?.name || 'N/A'}
+              </Badge>
+            </div>
+
+            <div className="space-y-2">
+              <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
+                <MapPin className="h-4 w-4" />
+                Location
+              </div>
+              <p className="text-sm font-medium">
+                {event.isOnline ? 'Online Event' : event.location || 'N/A'}
+              </p>
+            </div>
+
+            <div className="space-y-2">
+              <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
+                <Clock className="h-4 w-4" />
+                Duration
+              </div>
+              <p className="text-sm font-medium">
+                {new Date(event.startDate).toLocaleDateString()} - {new Date(event.endDate).toLocaleDateString()}
+              </p>
+            </div>
+
+            <div className="space-y-2">
+              <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
+                <Users className="h-4 w-4" />
+                Capacity
+              </div>
+              <p className="text-sm font-medium">
+                {event.totalCapacity} total seats
+              </p>
+            </div>
+
+            <div className="space-y-2">
+              <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
+                <DollarSign className="h-4 w-4" />
+                Pricing
+              </div>
+              <p className="text-sm font-medium">
+                {event.isFree ? 'Free Event' : `₹${event.price}`}
+              </p>
+            </div>
+
+            {eventStats && (
+              <div className="space-y-2">
+                <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
+                  <Users className="h-4 w-4" />
+                  Attendance
+                </div>
+                <p className="text-sm font-medium">
+                  {eventStats.totalTicketsSold} tickets sold
+                </p>
+              </div>
+            )}
+          </div>
+
+          {eventStats && (
+            <div className="mt-6 p-4 bg-green-50 border border-green-200 rounded-lg">
+              <h4 className="font-semibold text-green-800 mb-2">Revenue Summary</h4>
+              <p className="text-green-700">
+                Total Revenue: <span className="font-bold">₹{eventStats.totalRevenue.toLocaleString('en-IN')}</span>
+              </p>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
       {/* --- Conditional Rendering: Show PDF or Show Form --- */}
       {pdfUrl ? (
-        <div className="flex flex-col items-center gap-6">
-          <h2 className="h2-bold text-center">Your Report is Ready</h2>
-          <div className="w-full h-[700px] border rounded-lg">
-            <iframe src={pdfUrl} width="100%" height="100%" title="PDF Report" />
-          </div>
-          <Button onClick={downloadPdf} size="lg" className="button w-full sm:w-fit">
-            Download PDF
-          </Button>
-        </div>
-      ) : (
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col gap-5">
-            {/* The form fields are now visible again */}
-            <div className="flex flex-col gap-5 md:flex-row"> <FormField control={form.control} name="preparedBy" render={({ field }) => (<FormItem className="w-full"><FormLabel>Prepared By</FormLabel><FormControl><Input placeholder="Your name or team name" {...field} /></FormControl><FormMessage /></FormItem>)} /> </div>
-            <FormField control={form.control} name="eventPurpose" render={({ field }) => (<FormItem className="w-full"><FormLabel>Event Purpose</FormLabel><FormControl><Textarea placeholder="Describe the main purpose of the event" {...field} /></FormControl><FormMessage /></FormItem>)} />
-            <FormField control={form.control} name="keyHighlights" render={({ field }) => (<FormItem className="w-full"><FormLabel>Key Highlights</FormLabel><FormControl><Textarea placeholder="What were the standout moments?" {...field} /></FormControl><FormMessage /></FormItem>)} />
-            <FormField control={form.control} name="majorOutcomes" render={({ field }) => (<FormItem className="w-full"><FormLabel>Major Outcomes</FormLabel><FormControl><Textarea placeholder="What were the major results or outcomes?" {...field} /></FormControl><FormMessage /></FormItem>)} />
-            <FormField control={form.control} name="objective" render={({ field }) => (<FormItem className="w-full"><FormLabel>Objective</FormLabel><FormControl><Textarea placeholder="What was the event's primary objective?" {...field} /></FormControl><FormMessage /></FormItem>)} />
-            <FormField control={form.control} name="targetAudience" render={({ field }) => (<FormItem className="w-full"><FormLabel>Target Audience</FormLabel><FormControl><Textarea placeholder="Who was the intended audience?" {...field} /></FormControl><FormMessage /></FormItem>)} />
-            <FormField control={form.control} name="eventGoals" render={({ field }) => (<FormItem className="w-full"><FormLabel>Event Goals</FormLabel><FormControl><Textarea placeholder="What goals were set for the event?" {...field} /></FormControl><FormMessage /></FormItem>)} />
-            <FormField control={form.control} name="agenda" render={({ field }) => (<FormItem className="w-full"><FormLabel>Event Schedule / Agenda</FormLabel><FormControl><Textarea placeholder="Provide the event's schedule or agenda" {...field} /></FormControl><FormMessage /></FormItem>)} />
-            <FormField control={form.control} name="partners" render={({ field }) => (<FormItem className="w-full"><FormLabel>Partners, Sponsors, Collaborators</FormLabel><FormControl><Input placeholder="List any partners, sponsors, etc." {...field} /></FormControl><FormMessage /></FormItem>)} />
-            <FormField control={form.control} name="budgetAllocation" render={({ field }) => (<FormItem className="w-full"><FormLabel>Budget Allocation & Resources Used</FormLabel><FormControl><Textarea placeholder="Describe how the budget and resources were used" {...field} /></FormControl><FormMessage /></FormItem>)} />
-            <FormField control={form.control} name="vips" render={({ field }) => (<FormItem className="w-full"><FormLabel>VIPs, Speakers, Performers Present</FormLabel><FormControl><Input placeholder="List key people who were present" {...field} /></FormControl><FormMessage /></FormItem>)} />
-            <FormField control={form.control} name="keySessions" render={({ field }) => (<FormItem className="w-full"><FormLabel>Key Sessions / Speeches / Workshops</FormLabel><FormControl><Textarea placeholder="Describe the most important sessions" {...field} /></FormControl><FormMessage /></FormItem>)} />
-            <div className="flex flex-col gap-5 md:flex-row">
-              <FormField control={form.control} name="budget" render={({ field }) => (<FormItem className="w-full"><FormLabel>Budgeted Cost (INR)</FormLabel><FormControl><Input type="number" placeholder="e.g., 50000" {...field} /></FormControl><FormMessage /></FormItem>)} />
-              <FormField control={form.control} name="actualExpenditure" render={({ field }) => (<FormItem className="w-full"><FormLabel>Actual Expenditure (INR)</FormLabel><FormControl><Input type="number" placeholder="e.g., 45000" {...field} /></FormControl><FormMessage /></FormItem>)} />
-              <FormField control={form.control} name="sponsorship" render={({ field }) => (<FormItem className="w-full"><FormLabel>Sponsorship / Funding (INR)</FormLabel><FormControl><Input type="number" placeholder="e.g., 10000" {...field} /></FormControl><FormMessage /></FormItem>)} />
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-center">🎉 Your AI Report is Ready!</CardTitle>
+            <CardDescription className="text-center">
+              Your comprehensive event report has been generated successfully
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="flex flex-col items-center gap-6">
+              <div className="w-full h-[700px] border-2 border-primary/20 rounded-lg overflow-hidden shadow-lg">
+                <iframe src={pdfUrl} width="100%" height="100%" title="PDF Report" className="rounded-lg" />
+              </div>
+              <Button onClick={downloadPdf} size="lg" className="bg-primary hover:bg-primary/90 text-white px-8 py-3 text-lg font-semibold">
+                📥 Download PDF Report
+              </Button>
             </div>
-            <FormField control={form.control} name="photos" render={({ field }) => (<FormItem className="w-full"><FormLabel>Link to Photos/Videos</FormLabel><FormControl><FileUploader onFieldChange={field.onChange} imageUrl={field.value || ""} setFiles={setFiles} /></FormControl><FormMessage /></FormItem>)} />
-            <Button type="submit" size="lg" disabled={isGenerating} className="button col-span-2 w-full">
-              {isGenerating ? "Generating AI Report..." : "Generate AI Report & View PDF"}
-            </Button>
-          </form>
-        </Form>
+          </CardContent>
+        </Card>
+      ) : (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              ✨ Generate AI-Powered Report
+            </CardTitle>
+            <CardDescription>
+              Fill in the key details below. Most event information is automatically included from your event data.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Form {...form}>
+              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+                {/* Report Author */}
+                <FormField
+                  control={form.control}
+                  name="preparedBy"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-base font-semibold">Report Prepared By *</FormLabel>
+                      <FormControl>
+                        <Input
+                          placeholder="Your name or organization"
+                          className="h-12"
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                {/* Key Highlights */}
+                <FormField
+                  control={form.control}
+                  name="keyHighlights"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-base font-semibold">Key Highlights *</FormLabel>
+                      <FormControl>
+                        <Textarea
+                          placeholder="Describe the most memorable moments, achievements, or standout features of your event..."
+                          className="min-h-[120px] resize-none"
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                {/* Major Outcomes */}
+                <FormField
+                  control={form.control}
+                  name="majorOutcomes"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-base font-semibold">Major Outcomes & Results *</FormLabel>
+                      <FormControl>
+                        <Textarea
+                          placeholder="What were the main results, learnings, or impacts of the event? Include any feedback received..."
+                          className="min-h-[120px] resize-none"
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                {/* Financial Information */}
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <FormField
+                    control={form.control}
+                    name="budget"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-base font-semibold">Planned Budget (₹) *</FormLabel>
+                        <FormControl>
+                          <Input
+                            type="number"
+                            placeholder="50000"
+                            className="h-12"
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="actualExpenditure"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-base font-semibold">Actual Expenditure (₹) *</FormLabel>
+                        <FormControl>
+                          <Input
+                            type="number"
+                            placeholder="45000"
+                            className="h-12"
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="sponsorship"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-base font-semibold">Sponsorship/Funding (₹)</FormLabel>
+                        <FormControl>
+                          <Input
+                            type="number"
+                            placeholder="10000"
+                            className="h-12"
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+
+                {/* Photo Upload */}
+                <FormField
+                  control={form.control}
+                  name="photos"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-base font-semibold">Event Photos</FormLabel>
+                      <FormControl>
+                        <div className="border-2 border-dashed border-primary/20 rounded-lg p-6">
+                          <FileUploader
+                            onFieldChange={field.onChange}
+                            imageUrl={field.value || ""}
+                            setFiles={setFiles}
+                          />
+                        </div>
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                {/* Submit Button */}
+                <div className="pt-6">
+                  <Button
+                    type="submit"
+                    size="lg"
+                    disabled={isGenerating}
+                    className="w-full h-14 text-lg font-semibold bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 text-white shadow-lg"
+                  >
+                    {isGenerating ? (
+                      <>
+                        <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-3"></div>
+                        Generating AI Report...
+                      </>
+                    ) : (
+                      <>
+                        🚀 Generate AI-Powered Report
+                      </>
+                    )}
+                  </Button>
+                </div>
+              </form>
+            </Form>
+          </CardContent>
+        </Card>
       )}
     </div>
   );
