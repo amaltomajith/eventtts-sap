@@ -7,7 +7,8 @@ import React from "react";
 
 
 const Page = async () => {
-	const { userId } = auth();
+	// ✅ Await auth() to avoid header issues in Next.js 15
+	const { userId } = await auth();
 
 	if (!userId) {
 		redirect("/sign-in");

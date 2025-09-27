@@ -2,16 +2,16 @@
 
 import { useState, useRef, useCallback, useEffect } from 'react';
 import { Camera, X, RotateCcw, Zap, ZapOff, Settings } from 'lucide-react';
-import { Button } from '@/c-components/ui/button';
+import { Button } from '@/components/ui/button';
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from '@/c-components/ui/dialog';
+} from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
-import CameraDiagnostics from '@/c-components/CameraDiagnostics';
+import CameraDiagnostics from '@/components/shared/CameraDiagnostics';
 
 interface CameraCaptureProps {
   isOpen: boolean;

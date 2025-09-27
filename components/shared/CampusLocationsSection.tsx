@@ -1,8 +1,8 @@
 'use client';
 
 import { useState } from 'react';
-import { Card, CardContent } from '@/c-components/ui/card';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/c-components/ui/tabs';
+import { Card, CardContent } from '@/components/ui/card';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { campusLocations, locationImages } from '@/lib/campus-data';
 
 const locations = [
@@ -82,7 +82,7 @@ export default function CampusLocationsSection() {
       <h2 className="text-4xl font-bold mb-2 text-center text-black dark:text-white">Campus Locations</h2>
       <p className="mb-8 text-center text-lg max-w-2xl text-black dark:text-white">
         Explore the 11 key locations around campus that our AI model can recognize. These are<br />
-        the places you can navigate to and from using <span className="font-bold text-black dark:text-white">C-TRACK</span>.
+        the places you can navigate to and from using our navigation system.
       </p>
       {/* Tabs in two parallel rows, centered and spaced evenly */}
       <div className="flex flex-col gap-4 w-full max-w-4xl mb-8">
@@ -91,8 +91,8 @@ export default function CampusLocationsSection() {
             <button
               key={loc.name}
               className={`px-6 py-2 rounded-md font-medium transition-colors duration-200 focus:outline-none text-base ${selected === idx
-                  ? "bg-gray-100 text-black dark:bg-white dark:text-black shadow"
-                  : "bg-zinc-200 text-black dark:bg-zinc-800 dark:text-zinc-300 hover:bg-zinc-300 dark:hover:bg-zinc-700"
+                ? "bg-gray-100 text-black dark:bg-white dark:text-black shadow"
+                : "bg-zinc-200 text-black dark:bg-zinc-800 dark:text-zinc-300 hover:bg-zinc-300 dark:hover:bg-zinc-700"
                 }`}
               onClick={() => setSelected(idx)}
             >
@@ -105,8 +105,8 @@ export default function CampusLocationsSection() {
             <button
               key={loc.name}
               className={`px-6 py-2 rounded-md font-medium transition-colors duration-200 focus:outline-none text-base ${selected === idx + 6
-                  ? "bg-gray-100 text-black dark:bg-white dark:text-black shadow"
-                  : "bg-zinc-200 text-black dark:bg-zinc-800 dark:text-zinc-300 hover:bg-zinc-300 dark:hover:bg-zinc-700"
+                ? "bg-gray-100 text-black dark:bg-white dark:text-black shadow"
+                : "bg-zinc-200 text-black dark:bg-zinc-800 dark:text-zinc-300 hover:bg-zinc-300 dark:hover:bg-zinc-700"
                 }`}
               onClick={() => setSelected(idx + 6)}
             >

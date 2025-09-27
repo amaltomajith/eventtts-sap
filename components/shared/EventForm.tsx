@@ -3,7 +3,7 @@ import React, { useState, useEffect } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm, useFieldArray } from "react-hook-form";
 import * as z from "zod";
-import { Button } from "@/c-components/ui/button";
+import { Button } from "@/components/ui/button";
 import {
 	Form,
 	FormControl,
@@ -12,20 +12,20 @@ import {
 	FormItem,
 	FormLabel,
 	FormMessage,
-} from "@/c-components/ui/form";
-import { Input } from "@/c-components/ui/input";
-import { Checkbox } from "@/c-components/ui/checkbox";
-import { Popover, PopoverContent, PopoverTrigger } from "@/c-components/ui/popover";
+} from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
 import { CalendarIcon } from "lucide-react";
-import { Calendar } from "@/c-components/ui/calendar";
+import { Calendar } from "@/components/ui/calendar";
 import Image from "next/image";
-import { Badge } from "@/c-components/ui/badge";
+import { Badge } from "@/components/ui/badge";
 import { categories } from "@/constants/categories";
 import { campusLocations } from "@/lib/campus-data";
 import { createEvent, updateEvent } from "@/lib/actions/event.action";
-import { Textarea } from "@/c-components/ui/textarea";
+import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { useRouter } from "next/navigation";
 import { FileUploader } from "./FileUploader";
@@ -37,7 +37,7 @@ import {
 	SelectItem,
 	SelectTrigger,
 	SelectValue,
-} from "@/c-components/ui/select";
+} from "@/components/ui/select";
 
 // ---------------- SUB EVENT SCHEMA ----------------
 const subEventSchema = z.object({
@@ -615,7 +615,7 @@ const EventForm = ({ userId, type = "create", event, eventId }: Props) => {
 								<FormControl>
 									<div className="flex-center h-[54px] w-full overflow-hidden rounded-full bg-grey-50 px-4 py-2">
 										<Image
-											src="/assets/icons/dollar.svg"
+											src="/public/icons/dollar.svg"
 											alt="dollar"
 											width={24}
 											height={24}

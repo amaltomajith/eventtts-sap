@@ -1,7 +1,7 @@
 'use client';
 
 import { Calendar, Users, MapPin, Clock, TrendingUp, Award } from 'lucide-react';
-import { Card, CardContent } from '@/c-components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 
 interface EventStatsProps {
     totalEvents: number;

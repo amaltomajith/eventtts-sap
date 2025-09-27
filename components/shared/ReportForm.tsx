@@ -5,10 +5,10 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
-import { Button } from "@/c-components/ui/button";
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/c-components/ui/form";
-import { Input } from "@/c-components/ui/input";
-import { Textarea } from "@/c-components/ui/textarea";
+import { Button } from "@/components/ui/button";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { FileUploader } from "./FileUploader";
 import { useState } from "react";
 import { useUploadThing } from "@/lib/uploadthing";

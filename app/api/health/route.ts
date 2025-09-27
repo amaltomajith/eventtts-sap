@@ -3,7 +3,7 @@ import { NextResponse } from 'next/server';
 export async function GET() {
 	return NextResponse.json({
 		status: 'healthy',
-		message: 'C-Track Locator Next.js API is running!',
+		message: 'Locator Next.js API is running!',
 		timestamp: new Date().toISOString(),
 		roboflow_configured: !!process.env.ROBOFLOW_API_KEY,
 		endpoints: [

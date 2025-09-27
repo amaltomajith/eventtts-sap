@@ -18,7 +18,8 @@ interface HomePageProps {
 }
 
 export default async function Home({ searchParams }: HomePageProps) {
-  const { userId } = auth();
+  // ✅ Await auth() to avoid header issues in Next.js 15
+  const { userId } = await auth();
 
   // Await searchParams in Next.js 15+
   const params = await searchParams;

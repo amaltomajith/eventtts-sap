@@ -2,18 +2,18 @@
 
 import { useState, useRef, useCallback, useEffect } from 'react';
 import { Camera, RotateCcw, Settings, MapPin, Clock } from 'lucide-react';
-import { Button } from '@/c-components/ui/button';
+import { Button } from '@/components/ui/button';
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from '@/c-components/ui/dialog';
+} from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
-import { Badge } from '@/c-components/ui/badge';
-import { Progress } from '@/c-components/ui/progress';
-import CameraDiagnostics from '@/c-components/CameraDiagnostics';
+import { Badge } from '@/components/ui/badge';
+import { Progress } from '@/components/ui/progress';
+import CameraDiagnostics from '@/components/shared/CameraDiagnostics';
 
 interface PredictionResult {
   predicted_class: string;

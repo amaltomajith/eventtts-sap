@@ -8,7 +8,7 @@ import EventStats from '@/components/shared/EventStats';
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
-    title: 'Explore Events | CHRIST University Events Platform',
+    title: 'Explore Events | SAP Hackathon',
     description: 'Discover amazing events, workshops, seminars, and activities happening on campus. Find your perfect event and connect with like-minded students.',
     keywords: ['events', 'university', 'student activities', 'workshops', 'seminars', 'campus events'],
 };

@@ -11,6 +11,9 @@ export const metadata = {
   description: "A platform for managing events.",
 };
 
+// ✅ Force dynamic rendering to fix headers() error
+export const dynamic = 'force-dynamic';
+
 export default function RootLayout({
   children,
 }: {

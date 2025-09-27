@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import dynamic from 'next/dynamic';
-import { Button } from '@/c-components/ui/button';
+import { Button } from '@/components/ui/button';
 import {
   Card,
   CardContent,
@@ -10,23 +10,23 @@ import {
   CardFooter,
   CardHeader,
   CardTitle,
-} from '@/c-components/ui/card';
+} from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
 import { campusLocations } from '@/lib/campus-data';
 import { Upload, Video, ArrowLeft, Settings } from 'lucide-react';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/c-components/ui/tabs';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { getGPSService, requestGPSPermission, type GPSLocationResult } from '@/lib/gps-service';
 import { combineGPSAndAIPredictions, type HybridPredictionResult, type AIPrediction } from '@/lib/hybrid-prediction';
 import { getBestGPSMatch } from '@/lib/gps-utils';
 
 // 🔁 Dynamically import components to avoid SSR issues
-const RealTimeCameraInline = dynamic(() => import('@/c-components/RealTimeCameraInline'), { ssr: false });
-const CameraCapture = dynamic(() => import('@/c-components/CameraCapture'), { ssr: false });
-const ImageUploader = dynamic(() => import('@/c-components/ImageUploader'), { ssr: false });
-const LocationSelector = dynamic(() => import('@/c-components/LocationSelector'), { ssr: false });
-const NavigationMap = dynamic(() => import('@/c-components/NavigationMap'), { ssr: false });
-const GPSSettings = dynamic(() => import('@/c-components/GPSSettings'), { ssr: false });
-const PredictionBreakdown = dynamic(() => import('@/c-components/PredictionBreakdown'), { ssr: false });
+const RealTimeCameraInline = dynamic(() => import('@/components/shared/RealTimeCameraInline'), { ssr: false });
+const CameraCapture = dynamic(() => import('@/components/shared/CameraCapture'), { ssr: false });
+const ImageUploader = dynamic(() => import('@/components/shared/ImageUploader'), { ssr: false });
+const LocationSelector = dynamic(() => import('@/components/shared/LocationSelector'), { ssr: false });
+const NavigationMap = dynamic(() => import('@/components/shared/NavigationMap'), { ssr: false });
+const GPSSettings = dynamic(() => import('@/components/shared/GPSSettings'), { ssr: false });
+const PredictionBreakdown = dynamic(() => import('@/components/shared/PredictionBreakdown'), { ssr: false });
 
 type LocationState = 'detection' | 'destination' | 'navigation';
 type DetectionMethod = 'upload' | 'live';

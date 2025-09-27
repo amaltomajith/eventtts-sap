@@ -10,13 +10,13 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from "@/c-components/ui/form";
-import { Input } from "@/c-components/ui/input";
-import { Button } from "@/c-components/ui/button";
-import { Popover, PopoverContent, PopoverTrigger } from "@/c-components/ui/popover";
-import { Calendar } from "@/c-components/ui/calendar";
-import { Checkbox } from "@/c-components/ui/checkbox";
-import { Textarea } from "@/c-components/ui/textarea";
+} from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Calendar } from "@/components/ui/calendar";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Textarea } from "@/components/ui/textarea";
 import { FileUploader } from "./FileUploader";
 
 interface Props {

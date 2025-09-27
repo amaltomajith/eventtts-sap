@@ -21,7 +21,8 @@ const Page = async ({ params }: Props) => {
 	await headers();
 	const awaitedParams = await params;
 
-	const { userId } = auth();
+	// ✅ Await auth() to avoid header issues in Next.js 15
+	const { userId } = await auth();
 	let user = null;
 	let likedEvent = false;
 

@@ -1,6 +1,6 @@
 'use client';
 
-import { Button } from '@/c-components/ui/button';
+import { Button } from '@/components/ui/button';
 import { ArrowRight, Calendar, Users, MapPin, Sparkles } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';

@@ -1,6 +1,6 @@
 "use client";
 
-import { Input } from "@/c-components/ui/input";
+import { Input } from "@/components/ui/input";
 import { formUrlQuery, removeKeysFromQuery } from "@/lib/utils";
 import Image from "next/image";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";

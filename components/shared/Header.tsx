@@ -7,7 +7,7 @@ import Link from "next/link";
 import React, { useEffect, useState } from "react";
 import { ModeToggle } from "@/components/ui/ModeToggle";
 import { SignedOut, UserButton } from "@clerk/nextjs";
-import { Button } from "@/c-components/ui/button";
+import { Button } from "@/components/ui/button";
 import MobileNav from "./MobileNav";
 import ClientOnly from "./ClientOnly";
 

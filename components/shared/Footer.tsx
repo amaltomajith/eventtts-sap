@@ -162,7 +162,7 @@ const Footer = () => {
                 <Link href="https://christuniversity.in/" className="group">
                   <p className="font-bold text-white flex items-center gap-2">
                     <Heart className="w-4 h-4 text-red-400" />
-                    © 2025 CHRIST UNIVERSITY
+                    © 2025 Eventtts
                   </p>
                 </Link>
                 <span className="text-gray-400">•</span>

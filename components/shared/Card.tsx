@@ -12,8 +12,8 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "@/c-components/ui/dialog";
-import { Button } from '@/c-components/ui/button';
+} from "@/components/ui/dialog";
+import { Button } from '@/components/ui/button';
 
 type PopulatedEvent = IEvent & {
   category: { _id: string; name: string };

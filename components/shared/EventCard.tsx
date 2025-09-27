@@ -1,13 +1,13 @@
 import Image from "next/image";
 import React from "react";
-import { Badge } from "@/c-components/ui/badge";
+import { Badge } from "@/components/ui/badge";
 import { dateConverter, timeFormatConverter } from "@/lib/utils";
 import Link from "next/link";
 import LikeCartButton from "./LikeCartButton";
 import { getUserByClerkId } from "@/lib/actions/user.action";
 import DeleteEventButton from "./DeleteEventButton";
 import { IEvent } from "@/lib/models/event.model";
-import { Button } from "@/c-components/ui/button";
+import { Button } from "@/components/ui/button";
 
 interface Props {
   event: IEvent;

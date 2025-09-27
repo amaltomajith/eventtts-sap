@@ -4,7 +4,7 @@ import { useCallback, Dispatch, SetStateAction } from "react";
 import { useDropzone } from "@uploadthing/react/hooks";
 import { generateClientDropzoneAccept } from "uploadthing/client";
 
-import { Button } from "@/c-components/ui/button";
+import { Button } from "@/components/ui/button";
 
 const convertFileToUrl = (file: File) => URL.createObjectURL(file);
 

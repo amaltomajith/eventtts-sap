@@ -1,15 +1,15 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/c-components/ui/card';
-import { Switch } from '@/c-components/ui/switch';
-import { Slider } from '@/c-components/ui/slider';
-import { Label } from '@/c-components/ui/label';
-import { Button } from '@/c-components/ui/button';
-import { Badge } from '@/c-components/ui/badge';
-import { Separator } from '@/c-components/ui/separator';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Switch } from '@/components/ui/switch';
+import { Slider } from '@/components/ui/slider';
+import { Label } from '@/components/ui/label';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Separator } from '@/components/ui/separator';
 import { MapPin, Camera, Settings, Info, AlertCircle, CheckCircle } from 'lucide-react';
-import { Alert, AlertDescription } from '@/c-components/ui/alert';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 import { checkGPSPermission, type GPSPermissionState } from '@/lib/gps-utils';
 
 export interface PredictionSettings {

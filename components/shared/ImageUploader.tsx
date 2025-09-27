@@ -3,10 +3,10 @@
 import { useState, useCallback } from 'react';
 import { useDropzone } from 'react-dropzone';
 import { Upload, X, Image as ImageIcon, Camera } from 'lucide-react';
-import { Button } from '@/c-components/ui/button';
+import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
-import CameraCapture from '@/c-components/CameraCapture';
+import CameraCapture from '@/components/shared/CameraCapture';
 
 interface ImageUploaderProps {
   onImageUpload: (imageDataUrl: string, detectedLocation: string) => void;

@@ -1,8 +1,8 @@
 'use client';
 
-import { Card, CardContent, CardHeader, CardTitle } from '@/c-components/ui/card';
-import { Progress } from '@/c-components/ui/progress';
-import { Badge } from '@/c-components/ui/badge';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Progress } from '@/components/ui/progress';
+import { Badge } from '@/components/ui/badge';
 import { MapPin, Camera, Zap } from 'lucide-react';
 import { type HybridPredictionResult } from '@/lib/hybrid-prediction';
 

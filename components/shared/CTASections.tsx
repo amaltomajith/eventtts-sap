@@ -1,7 +1,7 @@
 'use client';
 
 import { ArrowRight, Calendar, Users, Star, Zap, Clock, MapPin } from 'lucide-react';
-import { Button } from '@/c-components/ui/button';
+import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 
 export default function CTASections() {

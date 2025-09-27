@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { Button } from "@/c-components/ui/button";
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
@@ -9,7 +9,7 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "@/c-components/ui/dialog";
+} from "@/components/ui/dialog";
 import { toast } from "@/hooks/use-toast";
 import { deleteEventById } from "@/lib/actions/event.action";
 

@@ -17,7 +17,8 @@ interface ProfilePageProps {
 }
 
 const ProfilePage = async ({ searchParams }: ProfilePageProps) => {
-  const { userId: clerkId } = auth();
+  // ✅ Await auth() to avoid header issues in Next.js 15
+  const { userId: clerkId } = await auth();
 
   if (!clerkId) {
     redirect("/sign-in");
@@ -49,27 +50,6 @@ const ProfilePage = async ({ searchParams }: ProfilePageProps) => {
           </section>
         )}
 
-        {/* My Tickets Section */}
-        <section className="bg-white rounded-2xl shadow-lg border border-gray-200 overflow-hidden">
-          <div className="bg-gradient-to-r from-red-500 to-red-600 px-8 py-6">
-            <div className="flex items-center justify-between">
-              <h3 className="text-2xl font-bold text-white">My Tickets</h3>
-              <Button asChild size="lg" className="bg-white text-red-600 hover:bg-gray-100 font-semibold hidden sm:flex">
-                <Link href="/explore-events">Explore More Events</Link>
-              </Button>
-            </div>
-          </div>
-          <div className="p-8">
-            <EventCards
-              events={myTickets}
-              currentUserId={clerkId}
-              emptyTitle="No event tickets purchased yet"
-              emptyStateSubtext="No worries - plenty of exciting events to explore!"
-              user={mongoUser}
-            />
-          </div>
-        </section>
-
         {/* Events Organized Section */}
         <section className="bg-white rounded-2xl shadow-lg border border-gray-200 overflow-hidden">
           <div className="bg-gradient-to-r from-red-500 to-red-600 px-8 py-6">
@@ -91,6 +71,28 @@ const ProfilePage = async ({ searchParams }: ProfilePageProps) => {
             />
           </div>
         </section>
+
+        {/* My Tickets Section */}
+        <section className="bg-white rounded-2xl shadow-lg border border-gray-200 overflow-hidden">
+          <div className="bg-gradient-to-r from-red-500 to-red-600 px-8 py-6">
+            <div className="flex items-center justify-between">
+              <h3 className="text-2xl font-bold text-white">My Tickets</h3>
+              <Button asChild size="lg" className="bg-white text-red-600 hover:bg-gray-100 font-semibold hidden sm:flex">
+                <Link href="/explore-events">Explore More Events</Link>
+              </Button>
+            </div>
+          </div>
+          <div className="p-8">
+            <EventCards
+              events={myTickets}
+              currentUserId={clerkId}
+              emptyTitle="No event tickets purchased yet"
+              emptyStateSubtext="No worries - plenty of exciting events to explore!"
+              user={mongoUser}
+            />
+          </div>
+        </section>
+
       </div>
     </div>
   );

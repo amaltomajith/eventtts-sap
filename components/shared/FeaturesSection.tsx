@@ -1,7 +1,7 @@
 'use client';
 
 import { Calendar, Users, MapPin, Star, Share2, Bell, Clock, Trophy } from 'lucide-react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/c-components/ui/card';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 
 const features = [
   {

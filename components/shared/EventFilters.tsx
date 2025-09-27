@@ -2,12 +2,12 @@
 
 import { useState } from 'react';
 import { Calendar, MapPin, DollarSign, Users, Clock, X, Filter, ChevronDown } from 'lucide-react';
-import { Button } from '@/c-components/ui/button';
-import { Checkbox } from '@/c-components/ui/checkbox';
-import { Input } from '@/c-components/ui/input';
-import { Label } from '@/c-components/ui/label';
-import { Separator } from '@/c-components/ui/separator';
-import { Badge } from '@/c-components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Separator } from '@/components/ui/separator';
+import { Badge } from '@/components/ui/badge';
 
 interface EventFiltersProps {
     onFiltersChange: (filters: EventFilters) => void;

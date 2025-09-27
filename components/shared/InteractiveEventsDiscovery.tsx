@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useMemo } from 'react';
 import { Search, Filter, Grid, List, Calendar, MapPin, Users, Clock, SlidersHorizontal, Sparkles } from 'lucide-react';
-import { Button } from '@/c-components/ui/button';
+import { Button } from '@/components/ui/button';
 import SearchBar from './SearchBar';
 import Categories from './Categories';
 import EventCards from './EventCards';
@@ -362,8 +362,8 @@ export default function InteractiveEventsDiscovery({
                         key={index}
                         onClick={filter.action}
                         className={`flex items-center gap-2 px-4 py-2 border rounded-lg transition-colors group ${isActive
-                            ? 'border-red-500 bg-red-50 text-red-700'
-                            : 'border-gray-200 hover:border-red-300 hover:bg-red-50'
+                          ? 'border-red-500 bg-red-50 text-red-700'
+                          : 'border-gray-200 hover:border-red-300 hover:bg-red-50'
                           }`}
                       >
                         <IconComponent className={`w-4 h-4 ${isActive ? 'text-red-600' : 'text-gray-500 group-hover:text-red-600'
@@ -373,8 +373,8 @@ export default function InteractiveEventsDiscovery({
                           {filter.label}
                         </span>
                         <span className={`text-xs px-2 py-1 rounded-full ${isActive
-                            ? 'bg-red-100 text-red-700'
-                            : 'bg-gray-100 text-gray-600 group-hover:bg-red-100 group-hover:text-red-700'
+                          ? 'bg-red-100 text-red-700'
+                          : 'bg-gray-100 text-gray-600 group-hover:bg-red-100 group-hover:text-red-700'
                           }`}>
                           {filter.count}
                         </span>

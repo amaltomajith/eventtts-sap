@@ -4,8 +4,8 @@ import React from 'react';
 import { Calendar, Users, MapPin, Clock, TrendingUp, BarChart3 } from 'lucide-react';
 import { IEvent } from '@/lib/models/event.model';
 import Link from 'next/link';
-import { Badge } from '@/c-components/ui/badge';
-import { Button } from '@/c-components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 
 interface EventCreatorDashboardProps {
   events: IEvent[];
@@ -62,7 +62,6 @@ export default function EventCreatorDashboard({ events }: EventCreatorDashboardP
             <BarChart3 className="w-5 h-5 text-white" />
           </div>
           <div>
-            <p className="text-red-600 text-sm font-semibold">⚡ For Event Organizers</p>
             <h2 className="text-3xl font-bold text-gray-800">Event Creator Dashboard</h2>
           </div>
         </div>
@@ -159,19 +158,6 @@ export default function EventCreatorDashboard({ events }: EventCreatorDashboardP
             ))}
           </div>
         )}
-
-        {/* Action Buttons */}
-        <div className="flex flex-col sm:flex-row gap-4 mt-8 pt-6 border-t-2 border-gray-200">
-          <Button asChild className="bg-gradient-to-r from-red-600 to-indigo-600 hover:from-red-700 hover:to-indigo-700 text-white flex-1 py-3">
-            <Link href="/create-event">
-              <Calendar className="w-4 h-4 mr-2" />
-              Start Creating Events
-            </Link>
-          </Button>
-          <Button asChild variant="outline" className="border-2 border-red-300 text-red-600 hover:bg-red-50 flex-1 py-3">
-            <Link href="/analytics">View Success Stories</Link>
-          </Button>
-        </div>
       </div>
     </div>
   );

@@ -2,15 +2,15 @@
 
 import { useState, useEffect } from 'react';
 import { Camera, CheckCircle, XCircle, AlertCircle, Info } from 'lucide-react';
-import { Button } from '@/c-components/ui/button';
+import { Button } from '@/components/ui/button';
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from '@/c-components/ui/card';
-import { Badge } from '@/c-components/ui/badge';
+} from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
 
 interface DiagnosticResult {
   name: string;
@@ -28,8 +28,8 @@ export default function CameraDiagnostics() {
 
     // Check 1: Browser Support
     if (typeof navigator !== 'undefined' &&
-        navigator.mediaDevices &&
-        typeof navigator.mediaDevices.getUserMedia === 'function') {
+      navigator.mediaDevices &&
+      typeof navigator.mediaDevices.getUserMedia === 'function') {
       results.push({
         name: 'Browser Support',
         status: 'pass',
@@ -46,7 +46,7 @@ export default function CameraDiagnostics() {
     // Check 2: Secure Context
     const isHttps = window.location.protocol === 'https:';
     const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
-    
+
     if (isHttps || isLocalhost) {
       results.push({
         name: 'Secure Context',
