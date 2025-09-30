@@ -28,21 +28,37 @@ export async function createUser(userData: CreateUserParams) {
 	}
 }
 
+// lib/actions/user.action.ts
+
+// ... (Other imports and functions remain the same)
+
 export async function getUserByClerkId(clerkId: string) {
-	try {
-		await connectToDatabase();
-		const user = await User.findOne({ clerkId: clerkId });
+    try {
+        await connectToDatabase();
+        
+        // Find the user by clerkId
+        const user = await User.findOne({ clerkId: clerkId });
 
-		if (!user) {
-			throw new Error("User not found");
-		}
+        // --- FIX IMPLEMENTATION ---
+        // Do NOT throw a hard error. 
+        // Simply return null, allowing the calling function (page.tsx) to handle the uncreated user gracefully.
+        if (!user) {
+            return null; // <--- CHANGED: Return null instead of throwing an error
+        }
+        // --------------------------
 
-		return JSON.parse(JSON.stringify(user));
-	} catch (error) {
-		console.log(error);
-		throw error;
-	}
+        return JSON.parse(JSON.stringify(user));
+    } catch (error) {
+        // Log the error for debugging, but still let the app continue if possible
+        console.log(error);
+        
+        // It's safer to re-throw here for actual database/connection errors, 
+        // but for the "User not found" case, we've already handled it by returning null above.
+        throw error; 
+    }
 }
+
+// ... (Other functions remain the same)
 
 export async function getUserById(userId: string) {
 	try {

@@ -8,6 +8,7 @@ import { getEventsByUserId } from "@/lib/actions/event.action";
 import { getOrdersByUserId } from "@/lib/actions/order.action";
 import { IOrder } from "@/types";
 import { getUserByClerkId } from "@/lib/actions/user.action";
+import { headers } from "next/headers";
 
 // ✅ This is the definitive fix for the headers/searchParams error
 export const dynamic = 'force-dynamic';
@@ -17,6 +18,8 @@ interface ProfilePageProps {
 }
 
 const ProfilePage = async ({ searchParams }: ProfilePageProps) => {
+  // ✅ Avoid Next.js 15 sync dynamic API issues
+  await headers();
   // ✅ Await auth() to avoid header issues in Next.js 15
   const { userId: clerkId } = await auth();
 
@@ -25,6 +28,10 @@ const ProfilePage = async ({ searchParams }: ProfilePageProps) => {
   }
 
   const mongoUser = await getUserByClerkId(clerkId);
+  if (!mongoUser) {
+    // If user is authenticated in Clerk but not present in DB, redirect to sign-in or onboarding
+    redirect("/sign-in");
+  }
   // Await searchParams in Next.js 15+
   const params = await searchParams;
   const organizedEventsPage = Number(params.page) || 1;

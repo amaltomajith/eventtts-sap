@@ -4,17 +4,23 @@ import { getLikedEvents, getUserByClerkId } from "@/lib/actions/user.action";
 import { auth } from "@clerk/nextjs";
 import { redirect } from "next/navigation";
 import React from "react";
+import { headers } from "next/headers";
 
 const Page = async () => {
-	const { userId } = auth();
+    // ✅ Avoid Next.js 15 sync dynamic API issues
+    await headers();
+    const { userId } = await auth();
 
 	if (!userId) {
 		redirect("/sign-in");
 	}
 
-	const user = await getUserByClerkId(userId);
+    const user = await getUserByClerkId(userId);
+    if (!user) {
+        redirect("/sign-in");
+    }
 
-	const likedEvents = await getLikedEvents(user._id);
+    const likedEvents = await getLikedEvents(user._id);
 
 	return (
 		<div>

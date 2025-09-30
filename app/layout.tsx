@@ -1,8 +1,7 @@
-import { ClerkProvider } from "@clerk/nextjs";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import React from "react";
-import { ThemeProvider } from "@/components/theme-provider";
+import ClientProviders from "@/components/ClientProviders";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -20,22 +19,13 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <ClerkProvider
-      publishableKey={process.env.NEXT_PUBLIC_CLERK_FRONTEND_API}
-    >
-      {/* ✅ FIX: Add suppressHydrationWarning to the html tag */}
-      <html lang="en" suppressHydrationWarning>
-        <body className={inter.className}>
-          <ThemeProvider
-            attribute="class"
-            defaultTheme="light"
-            enableSystem
-            disableTransitionOnChange
-          >
-            {children}
-          </ThemeProvider>
-        </body>
-      </html>
-    </ClerkProvider>
+    // ✅ Server layout (can export metadata). Providers moved to client wrapper
+    <html lang="en" suppressHydrationWarning>
+      <body className={inter.className}>
+        <ClientProviders>
+          {children}
+        </ClientProviders>
+      </body>
+    </html>
   );
 }

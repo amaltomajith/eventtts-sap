@@ -5,9 +5,23 @@ import { ArrowRight, Calendar, Users, MapPin, Sparkles } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useAuth } from '@clerk/nextjs';
+import { useEffect, useState } from 'react';
 
 export default function EventsHero() {
   const { userId } = useAuth();
+  const [blurProgress, setBlurProgress] = useState(0);
+
+  // Smoothly increase bottom blur + fade as user scrolls down
+  useEffect(() => {
+    const handleScroll = () => {
+      const y = window.scrollY || 0;
+      const progress = Math.max(0, Math.min(1, y / 240));
+      setBlurProgress(progress);
+    };
+    handleScroll();
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
 
   return (
     <section className="relative min-h-screen flex items-center justify-center bg-gradient-to-br from-red-900 to-red-500 pt-16">
@@ -78,8 +92,20 @@ export default function EventsHero() {
         </div>
       </div>
 
-      {/* Bottom Gradient */}
-      <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-white to-transparent"></div>
+      {/* Bottom scroll-linked fade + blur for a professional transition */}
+      <div
+        className="pointer-events-none absolute bottom-0 left-0 right-0"
+        style={{
+          height: '14rem',
+          opacity: blurProgress,
+          backdropFilter: `blur(${12 * blurProgress}px)`,
+          WebkitBackdropFilter: `blur(${12 * blurProgress}px)`,
+          maskImage: 'linear-gradient(to bottom, transparent 0%, black 65%)',
+          WebkitMaskImage: 'linear-gradient(to bottom, transparent 0%, black 65%)',
+          background:
+            'linear-gradient(to bottom, rgba(255,255,255,0) 0%, rgba(255,255,255,0.75) 60%, rgba(255,255,255,1) 100%)',
+        }}
+      />
     </section>
   );
 }

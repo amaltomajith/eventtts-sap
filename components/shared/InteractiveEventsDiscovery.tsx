@@ -291,7 +291,7 @@ export default function InteractiveEventsDiscovery({
   };
 
   return (
-    <section id="explore-events" className="py-12 bg-gray-50">
+    <section id="explore-events" className="py-12 bg-gray-50 dark:bg-black">
       <div className="container mx-auto px-4 max-w-7xl">
         <div className="flex flex-col lg:flex-row gap-8">
           {/* Desktop Filters Sidebar */}
@@ -319,7 +319,7 @@ export default function InteractiveEventsDiscovery({
                       </div>
                     )}
                   </div>
-                  <h2 className="text-2xl md:text-3xl font-bold text-gray-900">
+                  <h2 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white">
                     All Events
                   </h2>
                 </div>
@@ -336,7 +336,7 @@ export default function InteractiveEventsDiscovery({
             </div>
 
             {/* Search and Quick Filters */}
-            <div className="bg-white rounded-lg shadow-sm border p-6 mb-8">
+            <div className="bg-white dark:bg-neutral-900 rounded-lg shadow-sm border dark:border-neutral-800 p-6 mb-8">
               {/* Search Bar */}
               <div className="mb-6">
                 <SearchBar
@@ -348,7 +348,7 @@ export default function InteractiveEventsDiscovery({
 
               {/* Quick Filters */}
               <div className="mb-6">
-                <h3 className="text-sm font-semibold text-gray-700 mb-3 flex items-center gap-2">
+                <h3 className="text-sm font-semibold text-gray-700 dark:text-neutral-300 mb-3 flex items-center gap-2">
                   <SlidersHorizontal className="w-4 h-4" />
                   Quick Filters
                 </h3>
@@ -362,19 +362,19 @@ export default function InteractiveEventsDiscovery({
                         key={index}
                         onClick={filter.action}
                         className={`flex items-center gap-2 px-4 py-2 border rounded-lg transition-colors group ${isActive
-                          ? 'border-red-500 bg-red-50 text-red-700'
-                          : 'border-gray-200 hover:border-red-300 hover:bg-red-50'
+                          ? 'border-red-500 bg-red-50 text-red-700 dark:bg-red-900/20 dark:text-red-400'
+                          : 'border-gray-200 hover:border-red-300 hover:bg-red-50 dark:border-neutral-700 dark:hover:border-red-400 dark:hover:bg-red-900/20'
                           }`}
                       >
-                        <IconComponent className={`w-4 h-4 ${isActive ? 'text-red-600' : 'text-gray-500 group-hover:text-red-600'
+                        <IconComponent className={`w-4 h-4 ${isActive ? 'text-red-600 dark:text-red-400' : 'text-gray-500 group-hover:text-red-600 dark:text-neutral-400'
                           }`} />
-                        <span className={`text-sm font-medium ${isActive ? 'text-red-700' : 'text-gray-700 group-hover:text-red-700'
+                        <span className={`text-sm font-medium ${isActive ? 'text-red-700 dark:text-red-400' : 'text-gray-700 group-hover:text-red-700 dark:text-neutral-300'
                           }`}>
                           {filter.label}
                         </span>
                         <span className={`text-xs px-2 py-1 rounded-full ${isActive
-                          ? 'bg-red-100 text-red-700'
-                          : 'bg-gray-100 text-gray-600 group-hover:bg-red-100 group-hover:text-red-700'
+                          ? 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400'
+                          : 'bg-gray-100 text-gray-600 group-hover:bg-red-100 group-hover:text-red-700 dark:bg-neutral-800 dark:text-neutral-300'
                           }`}>
                           {filter.count}
                         </span>
@@ -385,17 +385,17 @@ export default function InteractiveEventsDiscovery({
               </div>
 
               {/* Controls */}
-              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 pt-4 border-t border-gray-100">
+              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 pt-4 border-t border-gray-100 dark:border-neutral-800">
                 {/* View Mode Toggle */}
                 <div className="flex items-center gap-4">
                   <div className="flex items-center gap-2">
-                    <span className="text-sm text-gray-600">View:</span>
-                    <div className="flex border border-gray-200 rounded-lg overflow-hidden">
+                    <span className="text-sm text-gray-600 dark:text-neutral-400">View:</span>
+                    <div className="flex border border-gray-200 dark:border-neutral-700 rounded-lg overflow-hidden">
                       <button
                         onClick={() => setViewMode('grid')}
                         className={`px-3 py-2 text-sm flex items-center gap-1 ${viewMode === 'grid'
-                          ? 'bg-red-100 text-red-700'
-                          : 'text-gray-600 hover:bg-gray-50'
+                          ? 'bg-red-100 text-red-700 dark:bg-red-900/20 dark:text-red-400'
+                          : 'text-gray-600 hover:bg-gray-50 dark:text-neutral-300 dark:hover:bg-neutral-800'
                           }`}
                       >
                         <Grid className="w-4 h-4" />
@@ -404,8 +404,8 @@ export default function InteractiveEventsDiscovery({
                       <button
                         onClick={() => setViewMode('list')}
                         className={`px-3 py-2 text-sm flex items-center gap-1 ${viewMode === 'list'
-                          ? 'bg-red-100 text-red-700'
-                          : 'text-gray-600 hover:bg-gray-50'
+                          ? 'bg-red-100 text-red-700 dark:bg-red-900/20 dark:text-red-400'
+                          : 'text-gray-600 hover:bg-gray-50 dark:text-neutral-300 dark:hover:bg-neutral-800'
                           }`}
                       >
                         <List className="w-4 h-4" />
@@ -416,7 +416,7 @@ export default function InteractiveEventsDiscovery({
 
                   {/* Sort Options */}
                   <div className="flex items-center gap-2">
-                    <span className="text-sm text-gray-600">Sort by:</span>
+                    <span className="text-sm text-gray-600 dark:text-neutral-400">Sort by:</span>
                     <select
                       value={sortBy}
                       onChange={(e) => {
@@ -429,7 +429,7 @@ export default function InteractiveEventsDiscovery({
                         });
                         router.push(newUrl, { scroll: false });
                       }}
-                      className="px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500"
+                      className="px-3 py-2 text-sm border border-gray-200 dark:border-neutral-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 dark:bg-neutral-900 dark:text-neutral-100"
                     >
                       <option value="date">Latest First</option>
                       <option value="popularity">Most Popular</option>
@@ -440,7 +440,7 @@ export default function InteractiveEventsDiscovery({
 
                 {/* Results count and advanced filters toggle */}
                 <div className="flex items-center gap-4">
-                  <span className="text-sm text-gray-500">
+                  <span className="text-sm text-gray-500 dark:text-neutral-400">
                     Showing {filteredEvents.length} of {events.length} events
                   </span>
                 </div>

@@ -3,6 +3,7 @@ import { auth } from "@clerk/nextjs";
 import EventsHero from "@/components/shared/EventsHero";
 import LoadingSpinner from "@/components/shared/LoadingSpinner";
 import { getEvents } from "@/lib/actions/event.action";
+import { headers } from "next/headers";
 
 // Lazy load components that are not immediately visible  
 const FeaturesSection = lazy(() => import("@/components/shared/FeaturesSection"));
@@ -18,6 +19,8 @@ interface HomePageProps {
 }
 
 export default async function Home({ searchParams }: HomePageProps) {
+  // ✅ Ensure headers() is awaited to avoid sync dynamic API error in Next.js 15
+  await headers();
   // ✅ Await auth() to avoid header issues in Next.js 15
   const { userId } = await auth();
 

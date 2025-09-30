@@ -39,7 +39,7 @@ export default async function ExploreEventsPage({ searchParams }: SearchParamPro
     ]);
 
     return (
-        <main className="min-h-screen bg-gray-50">
+        <main className="min-h-screen bg-gray-50 dark:bg-black dark:text-white">
             {/* Events Discovery Component */}
             <InteractiveEventsDiscovery
                 events={events?.events || []}

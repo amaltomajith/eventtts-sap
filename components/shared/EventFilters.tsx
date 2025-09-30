@@ -121,12 +121,12 @@ export default function EventFilters({ onFiltersChange, isOpen, onToggle }: Even
     }
 
     return (
-        <div className="w-full lg:w-80 bg-white rounded-lg shadow-sm border p-6 h-fit">
+        <div className="w-full lg:w-80 bg-white dark:bg-neutral-900 rounded-lg shadow-sm border dark:border-neutral-800 p-6 h-fit text-gray-900 dark:text-neutral-100">
             {/* Header */}
             <div className="flex items-center justify-between mb-6">
                 <div className="flex items-center gap-2">
-                    <Filter className="w-5 h-5 text-gray-700" />
-                    <h3 className="text-lg font-semibold text-gray-900">Filters</h3>
+                    <Filter className="w-5 h-5 text-gray-700 dark:text-neutral-300" />
+                    <h3 className="text-lg font-semibold text-gray-900 dark:text-neutral-100">Filters</h3>
                     {activeFilters > 0 && (
                         <Badge variant="secondary" className="ml-2">
                             {activeFilters}
@@ -158,7 +158,7 @@ export default function EventFilters({ onFiltersChange, isOpen, onToggle }: Even
             <div className="space-y-6">
                 {/* Date Range */}
                 <div>
-                    <Label className="text-sm font-medium text-gray-700 mb-3 flex items-center gap-2">
+                    <Label className="text-sm font-medium text-gray-700 dark:text-neutral-300 mb-3 flex items-center gap-2">
                         <Calendar className="w-4 h-4" />
                         When
                     </Label>
@@ -184,7 +184,7 @@ export default function EventFilters({ onFiltersChange, isOpen, onToggle }: Even
 
                 {/* Location */}
                 <div>
-                    <Label className="text-sm font-medium text-gray-700 mb-3 flex items-center gap-2">
+                    <Label className="text-sm font-medium text-gray-700 dark:text-neutral-300 mb-3 flex items-center gap-2">
                         <MapPin className="w-4 h-4" />
                         Location
                     </Label>
@@ -208,7 +208,7 @@ export default function EventFilters({ onFiltersChange, isOpen, onToggle }: Even
 
                 {/* Price Range */}
                 <div>
-                    <Label className="text-sm font-medium text-gray-700 mb-3 flex items-center gap-2">
+                    <Label className="text-sm font-medium text-gray-700 dark:text-neutral-300 mb-3 flex items-center gap-2">
                         <DollarSign className="w-4 h-4" />
                         Price Range
                     </Label>
@@ -218,7 +218,7 @@ export default function EventFilters({ onFiltersChange, isOpen, onToggle }: Even
                             placeholder="Min"
                             value={filters.priceRange[0]}
                             onChange={(e) => updateFilter('priceRange', [Number(e.target.value), filters.priceRange[1]])}
-                            className="w-20"
+                            className="w-20 dark:bg-neutral-800 dark:border-neutral-700 dark:text-neutral-100"
                         />
                         <span className="text-gray-500">-</span>
                         <Input
@@ -226,10 +226,10 @@ export default function EventFilters({ onFiltersChange, isOpen, onToggle }: Even
                             placeholder="Max"
                             value={filters.priceRange[1]}
                             onChange={(e) => updateFilter('priceRange', [filters.priceRange[0], Number(e.target.value)])}
-                            className="w-20"
+                            className="w-20 dark:bg-neutral-800 dark:border-neutral-700 dark:text-neutral-100"
                         />
                     </div>
-                    <div className="mt-2 text-xs text-gray-500">
+                    <div className="mt-2 text-xs text-gray-500 dark:text-neutral-400">
                         ₹{filters.priceRange[0]} - ₹{filters.priceRange[1]}
                     </div>
                 </div>
@@ -238,7 +238,7 @@ export default function EventFilters({ onFiltersChange, isOpen, onToggle }: Even
 
                 {/* Event Type */}
                 <div>
-                    <Label className="text-sm font-medium text-gray-700 mb-3 flex items-center gap-2">
+                    <Label className="text-sm font-medium text-gray-700 dark:text-neutral-300 mb-3 flex items-center gap-2">
                         <Users className="w-4 h-4" />
                         Event Type
                     </Label>
@@ -262,7 +262,7 @@ export default function EventFilters({ onFiltersChange, isOpen, onToggle }: Even
 
                 {/* Duration */}
                 <div>
-                    <Label className="text-sm font-medium text-gray-700 mb-3 flex items-center gap-2">
+                    <Label className="text-sm font-medium text-gray-700 dark:text-neutral-300 mb-3 flex items-center gap-2">
                         <Clock className="w-4 h-4" />
                         Duration
                     </Label>

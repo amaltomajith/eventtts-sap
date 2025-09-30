@@ -1,20 +1,26 @@
 import EventForm from "@/components/shared/EventForm";
 import { getUserByClerkId, getUserById } from "@/lib/actions/user.action";
 import { auth } from "@clerk/nextjs";
+import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 
 import React from "react";
 
 
 const Page = async () => {
-	// ✅ Await auth() to avoid header issues in Next.js 15
-	const { userId } = await auth();
+    // ✅ Await headers() first to avoid Next.js 15 sync dynamic API errors
+    await headers();
+    // ✅ Await auth() to avoid header issues in Next.js 15
+    const { userId } = await auth();
 
 	if (!userId) {
 		redirect("/sign-in");
 	}
 
-	const user = await getUserByClerkId(userId);
+    const user = await getUserByClerkId(userId);
+    if (!user) {
+        redirect("/sign-in");
+    }
 
 	return (
 		<div className="bg-gradient-to-br from-red-50 via-white to-rose-50 min-h-screen pb-20">
@@ -35,10 +41,10 @@ const Page = async () => {
 
 				{/* Form Section */}
 				<div className="bg-white rounded-2xl shadow-xl border border-gray-200 p-8">
-					<EventForm
-						userId={user._id}
-						type="create"
-					/>
+                    <EventForm
+                        userId={user._id}
+                        type="create"
+                    />
 				</div>
 			</div>
 		</div>
